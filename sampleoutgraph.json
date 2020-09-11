@@ -1,0 +1,175 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "coordinates": [
+                    36.3697191,
+                    127.362537001151
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "name": "Kyungmook Kwon",
+                "personalInfo": {
+                    "attributes": {
+                        "City": " Yusong",
+                        "S2016": 0,
+                        "S2015": 0,
+                        "Country": " South Korea",
+                        "S2011": 0,
+                        "Dept": null,
+                        "S2012": 0,
+                        "STot": 0,
+                        "PostCode": null,
+                        "CountryCode": " kor",
+                        "PubNum": 4,
+                        "S2014": 0,
+                        "Name": "Kyungmook Kwon",
+                        "Race": null,
+                        "Verified": null,
+                        "S2010": 0,
+                        "S2013": 0,
+                        "AffName": " Korea Advanced Institute of Science & Technology",
+                        "Position": null,
+                        "Gender": null,
+                        "SCOPUSID": 54794209900,
+                        "UCID": null
+                    },
+                    "publications": [
+                        " Direction-Selective Emission With Small Angular Divergence From A Subwavelength Aperture Using Radiative Waveguide Modes",
+                        " Lasing In Hybrid Metal-Bragg Nanocavities",
+                        " Open Nanopatch Cavity With Annular Bragg Reflector And Bottom Metal Plane",
+                        " Room-Temperature Lasing Of A Circular Bragg Cavity Laser With A Bottom Metal Plane"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "coordinates": [
+                    31.9078499,
+                    34.8133409244421
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "name": "Prakash Chandra Mondal",
+                "personalInfo": {
+                    "attributes": {
+                        "City": " Rehovot",
+                        "S2016": 0,
+                        "S2015": 0,
+                        "Country": " Israel",
+                        "S2011": 0,
+                        "Dept": null,
+                        "S2012": 0,
+                        "STot": 0,
+                        "PostCode": 76100.0,
+                        "CountryCode": " isr",
+                        "PubNum": 1,
+                        "S2014": 0,
+                        "Name": "Prakash Chandra Mondal",
+                        "Race": null,
+                        "Verified": null,
+                        "S2010": 0,
+                        "S2013": 0,
+                        "AffName": " Weizmann Institute of Science Israel",
+                        "Position": null,
+                        "Gender": null,
+                        "SCOPUSID": 56454008700,
+                        "UCID": null
+                    },
+                    "publications": [
+                        " Photospintronics: Magnetic Field-Controlled Photoemission And Light-Controlled Spin Transport In Hybrid Chiral Oligopeptide-Nanoparticle Structures"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "coordinates": [
+                    14.43879045,
+                    121.048057857141
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "name": "Yoonha Jung",
+                "personalInfo": {
+                    "attributes": {
+                        "City": " Chandler",
+                        "S2016": 0,
+                        "S2015": 0,
+                        "Country": " United States",
+                        "S2011": 0,
+                        "Dept": null,
+                        "S2012": 0,
+                        "STot": 0,
+                        "PostCode": null,
+                        "CountryCode": " usa",
+                        "PubNum": 1,
+                        "S2014": 0,
+                        "Name": "Yoonha Jung",
+                        "Race": null,
+                        "Verified": null,
+                        "S2010": 0,
+                        "S2013": 0,
+                        "AffName": " Amkor Technology",
+                        "Position": null,
+                        "Gender": null,
+                        "SCOPUSID": 55697798700,
+                        "UCID": null
+                    },
+                    "publications": [
+                        " Analysis Of Bga Solder Joint Reliability For Selected Solder Alloy And Surface Finish Configurations"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "coordinates": [
+                    38.52247515,
+                    -121.751392674913
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "name": "Joshua Hihath",
+                "personalInfo": {
+                    "attributes": {
+                        "City": " Davis",
+                        "S2016": 0,
+                        "S2015": 0,
+                        "Country": " United States",
+                        "S2011": 0,
+                        "Dept": null,
+                        "S2012": 0,
+                        "STot": 0,
+                        "PostCode": 95616.0,
+                        "CountryCode": " usa",
+                        "PubNum": 1,
+                        "S2014": 0,
+                        "Name": "Joshua Hihath",
+                        "Race": null,
+                        "Verified": null,
+                        "S2010": 0,
+                        "S2013": 0,
+                        "AffName": " UC Davis",
+                        "Position": null,
+                        "Gender": null,
+                        "SCOPUSID": 9436467600,
+                        "UCID": null
+                    },
+                    "publications": [
+                        " Immobilization-Mediated Reduction In Melting Temperatures Of Dna-Dna And Dna-Rna Hybrids: Immobilized Dna Probe Hybridization Studied By Spr"
+                    ]
+                }
+            }
+        }]
+}

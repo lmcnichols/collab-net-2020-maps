@@ -1,0 +1,9 @@
+#map {
+  height: 600px;
+  width: 100%;
+}
+
+.display-4 {
+  text-align: center;
+  font-size: xx-large;
+}
