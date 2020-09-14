@@ -1,21 +1,14 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-const fs = require('fs');
 
 const app = express();
 
 /* Enable cors */
 app.use(cors())
 
-app.get('/api/collaborators', function(req, res) {
-    var obj = fs.readFileSync('outGraph.json', 'utf-8', function(err, data) {
-        if (err) throw err;
-        return data;
-    });
-
-    res.send(obj);
-});
+/* Use express router */
+app.use('/api/map', require('./routes/api/map'));
 
 /* Setting a static folder. This doesnt really do anything for single
    page web apps but automatically routes the html */
