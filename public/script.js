@@ -8,7 +8,9 @@ var markers = [];
 function initMap() {
   var options = {
     center: CALPOLYLATLNG,
-    zoom: ZOOM
+    zoom: ZOOM,
+    mapTypeControl: false
+
   };
 
   map = new google.maps.Map(document.getElementById('map'), options);
@@ -36,25 +38,19 @@ function createMarkers(_callback) {
         });
       });*/
 
-      // Style the markers a bit. This will be our listing marker icon.
-      var defaultIcon = makeMarkerIcon('0091ff');
-      // Create a "highlighted location" marker color for when the user
-      // mouses over the marker.
-      var highlightedIcon = makeMarkerIcon('FFFF24');
-
       for (var school in schoolsMap) {
         var pos = new google.maps.LatLng(schoolsMap[school]["lat"], schoolsMap[school]["lng"]);
-        var marker = new google.maps.Marker({
-          position: pos,
-          map: map,
-          icon: defaultIcon
-
-        });
-        var infowindow = new google.maps.InfoWindow();
+        var name = school;
+        addMarker(map, pos, name);
+      }
+        
+  /*      var infowindow = new google.maps.InfoWindow();
         // When marker is clicked infowindow pops up
         google.maps.event.addListener(marker, 'click', function(){
-            populateInfoWindow(map, marker, infowindow)
+          populateInfoWindow(map, marker, infowindow)
         });
+        // Two event listeners - one for mouseover, one for mouseout,
+        // to change the colors back and forth.
         // Two event listeners - one for mouseover, one for mouseout,
         // to change the colors back and forth.
         marker.addListener('mouseover', function() {
@@ -62,6 +58,7 @@ function createMarkers(_callback) {
         });
         marker.addListener('mouseout', function() {
           this.setIcon(defaultIcon);
+<<<<<<< HEAD
         });
       }
 
@@ -76,11 +73,43 @@ function renderMarkers() {
     new google.maps.Marker({
       position: pos,
       map: map
+=======
+        }); */
+    
+>>>>>>> Update script.js
     });
 <<<<<<< HEAD
   });
 }
 =======
+}
+
+function addMarker(map, position, name){
+  var defaultIcon = makeMarkerIcon('0091ff');
+  // Create a "highlighted location" marker color for when the user
+  // mouses over the marker.
+  var highlightedIcon = makeMarkerIcon('FFFF24');
+
+  const marker = new google.maps.Marker({
+      position: position,
+      map: map,
+      icon: defaultIcon,
+      title: name,
+  });
+    
+  var infowindow = new google.maps.InfoWindow();
+  // When marker is clicked infowindow pops up
+  google.maps.event.addListener(marker, 'click', function(){
+      populateInfoWindow(map, marker, infowindow)
+  });
+  // Two event listeners - one for mouseover, one for mouseout,
+  // to change the colors back and forth.
+  marker.addListener('mouseover', function() {
+    this.setIcon(highlightedIcon);
+  });
+  marker.addListener('mouseout', function() {
+    this.setIcon(defaultIcon);
+  });
 }
 
 // This function takes in a COLOR, and then creates a new marker
@@ -95,6 +124,7 @@ function makeMarkerIcon(markerColor) {
     new google.maps.Point(10, 34),
     new google.maps.Size(21,34));
   return markerImage;
+}
 
 function populateInfoWindow(map, marker, infowindow) {
   // Check to make sure the infowindow is not already opened on this marker.
@@ -107,6 +137,12 @@ function populateInfoWindow(map, marker, infowindow) {
     });
     infowindow.open(map, marker);
   }
+<<<<<<< HEAD
 }
 }
+>>>>>>> Update script.js
+=======
+} 
+
+
 >>>>>>> Update script.js
