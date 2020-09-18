@@ -3,6 +3,8 @@ const CURVATURE = 0.5;
 const CALPOLYLATLNG = {lat: 35.3, lng: -120.65};
 const ZOOM = 6;
 
+var markers = [];
+
 function initMap() {
   var options = {
     center: CALPOLYLATLNG,
@@ -10,10 +12,12 @@ function initMap() {
   };
 
   map = new google.maps.Map(document.getElementById('map'), options);
-  createMarkers();
+  createMarkers(function(){
+    renderMarkers();
+  });
 }
 
-function createMarkers() {
+function createMarkers(_callback) {
   const url = new URL('http://localhost:3000/api/map/collaborators');
   fetch(url)
     .then(function(data) {
@@ -33,11 +37,28 @@ function createMarkers() {
       });*/
       
       for (var school in schoolsMap) {
-        var pos = new google.maps.LatLng(schoolsMap[school]["lat"], schoolsMap[school]["lng"]);
-        var marker = new google.maps.Marker({
-          position: pos,
-          map: map
-        })
+        var lat = schoolsMap[school]['lat'];
+        var lng = schoolsMap[school]['lng'];
+        markers.push({
+          school: school,
+          position: {
+            lat: lat,
+            lng: lng
+          }
+        });
       }
+
+      _callback();
     });
+}
+
+function renderMarkers() {
+  console.log(markers);
+  markers.forEach(function(school){
+    var pos = new google.maps.LatLng(school['position']['lat'], school['position']['lng']);
+    new google.maps.Marker({
+      position: pos,
+      map: map
+    });
+  });
 }
