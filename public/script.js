@@ -39,22 +39,6 @@ function createMarkers() {
         var name = school;
         addMarker(map, pos, name);
       }
-        
-  /*      var infowindow = new google.maps.InfoWindow();
-        // When marker is clicked infowindow pops up
-        google.maps.event.addListener(marker, 'click', function(){
-          populateInfoWindow(map, marker, infowindow)
-        });
-        // Two event listeners - one for mouseover, one for mouseout,
-        // to change the colors back and forth.
-        // Two event listeners - one for mouseover, one for mouseout,
-        // to change the colors back and forth.
-        marker.addListener('mouseover', function() {
-          this.setIcon(highlightedIcon);
-        });
-        marker.addListener('mouseout', function() {
-          this.setIcon(defaultIcon);
-        }); */
     
     });
 }
