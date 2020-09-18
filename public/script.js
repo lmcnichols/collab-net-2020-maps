@@ -43,6 +43,7 @@ function createMarkers(_callback) {
         var name = school;
         addMarker(map, pos, name);
       }
+<<<<<<< HEAD
         
   /*      var infowindow = new google.maps.InfoWindow();
         // When marker is clicked infowindow pops up
@@ -75,6 +76,8 @@ function renderMarkers() {
       map: map
 =======
         }); */
+=======
+>>>>>>> Update script.js
     
 >>>>>>> Update script.js
     });
