@@ -24,10 +24,12 @@ function createMarkers(_callback) {
   fetch(url)
     .then(function(data) {
         return data.json();
-    }).then(function (schoolsMap) {
-      /* The commented out code below is used when the response is
-         in the format of an array, as opposed to just a JSON object
-         where the name of the school is the property of the object */
+    }).then(function (schools) {
+      /*
+        The commented out code below is used when the response is
+        in the format of an array, as opposed to just a JSON object
+        where the name of the school is the property of the object
+      */
       /*schoolsMap.forEach(function(value, key) {
         var lat = value.lat;
         var lng = value.lng;
@@ -38,66 +40,35 @@ function createMarkers(_callback) {
         });
       });*/
 
-      for (var school in schoolsMap) {
-        var pos = new google.maps.LatLng(schoolsMap[school]["lat"], schoolsMap[school]["lng"]);
+      for (var school in schools) {
+        var pos = new google.maps.LatLng(schools[school]["lat"], schools[school]["lng"]);
         var name = school;
-        addMarker(map, pos, name);
+        var newMarker = addMarker(pos, name);
+        markers.push(newMarker);
       }
-<<<<<<< HEAD
-        
-  /*      var infowindow = new google.maps.InfoWindow();
-        // When marker is clicked infowindow pops up
-        google.maps.event.addListener(marker, 'click', function(){
-          populateInfoWindow(map, marker, infowindow)
-        });
-        // Two event listeners - one for mouseover, one for mouseout,
-        // to change the colors back and forth.
-        // Two event listeners - one for mouseover, one for mouseout,
-        // to change the colors back and forth.
-        marker.addListener('mouseover', function() {
-          this.setIcon(highlightedIcon);
-        });
-        marker.addListener('mouseout', function() {
-          this.setIcon(defaultIcon);
-<<<<<<< HEAD
-        });
-      }
-
+    
+    }).then(function() {
       _callback();
     });
 }
 
 function renderMarkers() {
-  console.log(markers);
-  markers.forEach(function(school){
-    var pos = new google.maps.LatLng(school['position']['lat'], school['position']['lng']);
-    new google.maps.Marker({
-      position: pos,
-      map: map
-=======
-        }); */
-=======
->>>>>>> Update script.js
-    
->>>>>>> Update script.js
+    markers.forEach(function(marker) {
+      marker.setMap(map);
+      console.log(marker);
     });
-<<<<<<< HEAD
-  });
-}
-=======
 }
 
-function addMarker(map, position, name){
-  var defaultIcon = makeMarkerIcon('0091ff');
+function addMarker(position, name){
+  const defaultIcon = makeMarkerIcon('0091ff');
   // Create a "highlighted location" marker color for when the user
   // mouses over the marker.
-  var highlightedIcon = makeMarkerIcon('FFFF24');
+  const highlightedIcon = makeMarkerIcon('FFFF24');
 
   const marker = new google.maps.Marker({
       position: position,
-      map: map,
       icon: defaultIcon,
-      title: name,
+      title: name
   });
     
   var infowindow = new google.maps.InfoWindow();
@@ -113,6 +84,8 @@ function addMarker(map, position, name){
   marker.addListener('mouseout', function() {
     this.setIcon(defaultIcon);
   });
+
+  return marker;
 }
 
 // This function takes in a COLOR, and then creates a new marker
@@ -140,12 +113,6 @@ function populateInfoWindow(map, marker, infowindow) {
     });
     infowindow.open(map, marker);
   }
-<<<<<<< HEAD
-}
-}
->>>>>>> Update script.js
-=======
 } 
 
 
->>>>>>> Update script.js
