@@ -3,6 +3,8 @@ const CURVATURE = 0.5;
 const CALPOLYLATLNG = {lat: 35.3, lng: -120.65};
 const ZOOM = 6;
 
+var markers = [];
+
 function initMap() {
   var options = {
     center: CALPOLYLATLNG,
@@ -12,18 +14,22 @@ function initMap() {
   };
 
   map = new google.maps.Map(document.getElementById('map'), options);
-  createMarkers();
+  createMarkers(function(){
+    renderMarkers();
+  });
 }
 
-function createMarkers() {
+function createMarkers(_callback) {
   const url = new URL('http://localhost:3000/api/map/collaborators');
   fetch(url)
     .then(function(data) {
         return data.json();
-    }).then(function (schoolsMap) {
-      /* The commented out code below is used when the response is
-         in the format of an array, as opposed to just a JSON object
-         where the name of the school is the property of the object */
+    }).then(function (schools) {
+      /*
+        The commented out code below is used when the response is
+        in the format of an array, as opposed to just a JSON object
+        where the name of the school is the property of the object
+      */
       /*schoolsMap.forEach(function(value, key) {
         var lat = value.lat;
         var lng = value.lng;
@@ -34,26 +40,34 @@ function createMarkers() {
         });
       });*/
 
-      for (var school in schoolsMap) {
-        var pos = new google.maps.LatLng(schoolsMap[school]["lat"], schoolsMap[school]["lng"]);
+      for (var school in schools) {
+        var pos = new google.maps.LatLng(schools[school]["lat"], schools[school]["lng"]);
         var name = school;
-        addMarker(map, pos, name);
+        var newMarker = addMarker(pos, name);
+        markers.push(newMarker);
       }
     
+    }).then(function() {
+      _callback();
     });
 }
 
-function addMarker(map, position, name){
-  var defaultIcon = makeMarkerIcon('0091ff');
+function renderMarkers() {
+    markers.forEach(function(marker) {
+      marker.setMap(map);
+    });
+}
+
+function addMarker(position, name){
+  const defaultIcon = makeMarkerIcon('0091ff');
   // Create a "highlighted location" marker color for when the user
   // mouses over the marker.
-  var highlightedIcon = makeMarkerIcon('FFFF24');
+  const highlightedIcon = makeMarkerIcon('FFFF24');
 
   const marker = new google.maps.Marker({
       position: position,
-      map: map,
       icon: defaultIcon,
-      title: name,
+      title: name
   });
     
   var infowindow = new google.maps.InfoWindow();
@@ -69,6 +83,8 @@ function addMarker(map, position, name){
   marker.addListener('mouseout', function() {
     this.setIcon(defaultIcon);
   });
+
+  return marker;
 }
 
 // This function takes in a COLOR, and then creates a new marker

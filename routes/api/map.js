@@ -40,7 +40,7 @@ router.get('/collaborators', function(req, res) {
                 "lat": lat,
                 "lng": lng
             };
-        };
+        }
     });
 
     res.send(schools);
