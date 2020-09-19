@@ -55,7 +55,6 @@ function createMarkers(_callback) {
 function renderMarkers() {
     markers.forEach(function(marker) {
       marker.setMap(map);
-      console.log(marker);
     });
 }
 
