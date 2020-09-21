@@ -21,7 +21,13 @@ You can download Node.js and NPM in this environment by running
 conda install nodejs
 ```
 
-Once you have downloaded nodejs in your system, you can launch the application by running
+Once you have installed Node.js into your environment, you can install the packages required
+to launch the application by running
+```
+npm install
+```
+
+Once you have installed all dependencies specified in "package.json", you can launch the application by running
 ```
 npm run start
 ```
