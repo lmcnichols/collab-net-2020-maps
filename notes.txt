@@ -1,0 +1,57 @@
+Collaborator Class {
+    name,
+    id,
+    school,
+    friends = [],
+    publications = []
+}
+
+School Class {
+    name,
+    id,
+    location = [],
+    collaborators = []
+}
+
+STORE:
+    • A map of collaborators -> collaborators
+    • A map of schools -> publications
+    • A map of publications -> collaborators
+    • A map of publications -> schools
+    • Adjacency matrix
+
+GIVEN: a list of collaborators and their info
+TODO:
+    For each collaborator:
+        • Create new collaborator object
+        • Create new school object and add to list of schools if not already there
+            - Keep count of # of schools, giving each one a unique ID
+        • Add collaborator to school.collaborators
+        numSchools++
+
+matrix[numSchools][numSchools]
+
+Brainstorm:
+• Open page: load all the markers (each reprsenting a school)
+• Click on marker: list of all collaborators from that school
+    - All outgoing edges from the collaborators from that school
+    for each school {
+        for (collaborator in school.collaborators) {
+            for (friend in collaborator.friends) {
+                matrix[school.id][friend.school.id] += 1;
+                matrix[friend.schoo.id][school.id] += 1;
+            }
+        }
+    }
+
+for (int i = 0; i < numSchools; i++) {
+    for (int j = i + 1; j < numSchools; j++) {
+
+    }
+}
+
+   0  1  2  3
+0 [0, 1, 1, 0]
+1 [1, 0, 0, 1]
+2 [1, 0, 0, 0]
+3 [0, 1, 0, 0]
