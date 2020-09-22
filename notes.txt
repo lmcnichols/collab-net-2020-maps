@@ -39,7 +39,7 @@ Brainstorm:
         for (collaborator in school.collaborators) {
             for (friend in collaborator.friends) {
                 matrix[school.id][friend.school.id] += 1;
-                matrix[friend.schoo.id][school.id] += 1;
+                matrix[friend.school.id][school.id] += 1;
             }
         }
     }
