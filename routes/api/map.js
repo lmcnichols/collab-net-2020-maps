@@ -1,14 +1,77 @@
+"use strict";
+
+// import nodejs dependencies
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 
+// import classes
+import { Institution } from '../classes/Institution.js';
+
+/*
+    GLOBAL VARIABLES
+    BE CAREFUL NOT TO USE THESE NAMES
+    or else you're gonna pay
+*/
+
+/* ================================================== */
 const GRAPH_FILE = 'outGraph.json';
+var data = {};
+var institutionData = {};
+var collaboratorData = {};
+var publicationData = {};
+/* ================================================== */
+
+/* Populate global data objects */
+router.get('/scrapeData', function(req, res) {
+    var count = 0;
+
+    var obj = fs.readFileSync(GRAPH_FILE, 'utf-8', function(err, fileContents) {
+        if (err) throw err;
+        return fileContents;
+    });
+
+    JSON.parse(obj).features.forEach(function(collaborator) {
+        // scrape collaborator information
+        var name = collaborator["properties"]["name"];
+        var scopusid = collaborator["properties"]["personalInfo"]["attributes"]["SCOPUSID"];
+
+        // scrape institution information
+        var instname = collaborator["properties"]["personalInfo"]["attributes"]["AffName"].substring(1);
+        var publications = collaborator["properties"]["personalInfo"]["publication"];
+        var location = collaborator["geometry"]["coordinates"];
+
+        // remove space at beginning of titles
+        cleanPublications(publications);
+
+        // make new school object or add to existing school object
+        if (institutionData.hasOwnProperty(instname)) {
+            var inst = institutionData[instname];
+            inst.addPublications(publications);
+            inst.addCollaborator(collaborator);
+        } else {
+            var newInst = new Institution(instname, count, location, publications, collaborator);
+            institutionData[instname] = newInst;
+
+            count++;
+        }
+    });
+
+    res.send(institutionData);
+})
+
+/* Cleanup publications array scraped from file */
+function cleanPublications(pubs) {
+    for (var i = 0; i < pubs.length; i++) {
+        pubs[i] = pubs[i].substring(1);
+    }
+}
 
 /* Get all schools */
 router.get('/collaborators', function(req, res) {
-    var obj = fs.readFileSync(GRAPH_FILE, 'utf-8', function(err, data) {
+    var obj = fs.readFileSync(GRAPH_FILE, 'utf-8', function(err, fileContents) {
         if (err) throw err;
-        return data;
+        return fileContents;
     });
 
     /* The commented out code below is used when the response is
