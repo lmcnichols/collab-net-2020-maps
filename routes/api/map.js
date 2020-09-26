@@ -4,9 +4,10 @@
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
+const { performance } = require('perf_hooks');
 
 // import classes
-import { Institution } from '../classes/Institution.js';
+var Institution = require('../classes/Institution');
 
 /*
     GLOBAL VARIABLES
@@ -24,6 +25,7 @@ var publicationData = {};
 
 /* Populate global data objects */
 router.get('/scrapeData', function(req, res) {
+    var t1 = performance.now();
     var count = 0;
 
     var obj = fs.readFileSync(GRAPH_FILE, 'utf-8', function(err, fileContents) {
@@ -37,8 +39,10 @@ router.get('/scrapeData', function(req, res) {
         var scopusid = collaborator["properties"]["personalInfo"]["attributes"]["SCOPUSID"];
 
         // scrape institution information
-        var instname = collaborator["properties"]["personalInfo"]["attributes"]["AffName"].substring(1);
-        var publications = collaborator["properties"]["personalInfo"]["publication"];
+        var instname = collaborator["properties"]["personalInfo"]["attributes"]["AffName"];
+        if (instname === null)
+            instname = "Unknown Institution";
+        var publications = collaborator["properties"]["personalInfo"]["publications"];
         var location = collaborator["geometry"]["coordinates"];
 
         // remove space at beginning of titles
@@ -48,19 +52,21 @@ router.get('/scrapeData', function(req, res) {
         if (institutionData.hasOwnProperty(instname)) {
             var inst = institutionData[instname];
             inst.addPublications(publications);
-            inst.addCollaborator(collaborator);
+            inst.addCollaborator(name);
         } else {
-            var newInst = new Institution(instname, count, location, publications, collaborator);
+            var newInst = new Institution(instname, count, location, publications, name);
             institutionData[instname] = newInst;
-
             count++;
         }
     });
 
     res.send(institutionData);
+
+    var t2 = performance.now();
+    console.log(`This took ${(t2 - t1) / 1000} seconds`);
 })
 
-/* Cleanup publications array scraped from file */
+// Cleanup publications array scraped from file
 function cleanPublications(pubs) {
     for (var i = 0; i < pubs.length; i++) {
         pubs[i] = pubs[i].substring(1);
