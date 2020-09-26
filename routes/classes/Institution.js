@@ -1,7 +1,7 @@
 "use strict";
 
 // class representing an institution
-export class Institution {
+class Institution {
     constructor(name, id, location, publications, collaborator) {
         this.name = name;
         this.id = id;
@@ -11,14 +11,16 @@ export class Institution {
     }
 
     addPublications(publications) {
-        this.publications.forEach(function(pub) {
-            if (!this.publications.includes(pub)) {
-                this.publications.push(pub);
+        for (var i = 0; i < publications.length; i++) {
+            if (!this.publications.includes(publications[i])) {
+                this.publications.push(publications[i])
             }
-        });
+        }
     }
 
     addCollaborator(collaborator) {
         this.collaborators.push(collaborator);
     }
 }
+
+module.exports = Institution;
