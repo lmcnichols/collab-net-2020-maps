@@ -58,6 +58,8 @@ router.get('/scrapeData', function(req, res) {
             institutionData[instname] = newInst;
             count++;
         }
+
+        // 
     });
 
     res.send(institutionData);
