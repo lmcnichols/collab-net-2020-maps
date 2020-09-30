@@ -2,7 +2,7 @@
 
 // class representing a collaborator
 
-class collaborator {
+class Collaborator {
     constructor(name, scopusid, publications, instname) {
         this.name = name;
         this.scopusid = scopusid;
@@ -11,3 +11,5 @@ class collaborator {
         this.instname = instname;
     }
 }
+
+module.exports = Collaborator;

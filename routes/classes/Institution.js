@@ -13,7 +13,7 @@ class Institution {
     addPublications(publications) {
         for (var i = 0; i < publications.length; i++) {
             if (!this.publications.includes(publications[i])) {
-                this.publications.push(publications[i])
+                this.publications.push(publications[i]);
             }
         }
     }

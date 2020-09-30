@@ -8,6 +8,7 @@ const { performance } = require('perf_hooks');
 
 // import classes
 var Institution = require('../classes/Institution');
+var Collaborator = require('../classes/Collaborator');
 
 /*
     GLOBAL VARIABLES
@@ -17,10 +18,10 @@ var Institution = require('../classes/Institution');
 
 /* ================================================== */
 const GRAPH_FILE = 'outGraph.json';
-var data = {};
-var institutionData = {};
-var collaboratorData = {};
-var publicationData = {};
+//var data = {};
+var institutionData = new Map();
+var collaboratorData = new Map();
+var publicationData = new Map();
 /* ================================================== */
 
 /* Populate global data objects */
@@ -35,34 +36,52 @@ router.get('/scrapeData', function(req, res) {
 
     JSON.parse(obj).features.forEach(function(collaborator) {
         // scrape collaborator information
-        var name = collaborator["properties"]["name"];
+        var name = collaborator["properties"]["name"].trim();
         var scopusid = collaborator["properties"]["personalInfo"]["attributes"]["SCOPUSID"];
 
         // scrape institution information
         var instname = collaborator["properties"]["personalInfo"]["attributes"]["AffName"];
-        if (instname === null)
+        if (instname === null){
             instname = "Unknown Institution";
+        } else {
+            instname = instname.trim();
+        }
         var publications = collaborator["properties"]["personalInfo"]["publications"];
         var location = collaborator["geometry"]["coordinates"];
 
-        // remove space at beginning of titles
+        // remove white spaces at the ends of publication names
         cleanPublications(publications);
 
-        // make new school object or add to existing school object
-        if (institutionData.hasOwnProperty(instname)) {
-            var inst = institutionData[instname];
+        // make new institution object or add to existing institution object
+        // update dictionary with "instname" : new inst object
+        if (institutionData.has(instname)) {
+            var inst = institutionData.get(instname);
             inst.addPublications(publications);
             inst.addCollaborator(name);
         } else {
             var newInst = new Institution(instname, count, location, publications, name);
-            institutionData[instname] = newInst;
+            institutionData.set(instname, newInst);
             count++;
         }
 
-        // 
+        // make new collaborator object
+        var newCollab = new Collaborator(name, scopusid, publications, instname)
+        collaboratorData.set(scopusid, newCollab);
     });
 
-    res.send(institutionData);
+    /* These local objects are only for testing, we send them as
+       JSON response to check formatting */
+    /*var localInstMap = {};
+    institutionData.forEach(function (value, key) {
+        localInstMap[key] = value;
+    })
+
+    var localColMap = {};
+    collaboratorData.forEach(function (value, key) {
+        localColMap[key] = value;
+    })*/
+    
+    res.sendStatus(200)
 
     var t2 = performance.now();
     console.log(`This took ${(t2 - t1) / 1000} seconds`);
@@ -71,7 +90,7 @@ router.get('/scrapeData', function(req, res) {
 // Cleanup publications array scraped from file
 function cleanPublications(pubs) {
     for (var i = 0; i < pubs.length; i++) {
-        pubs[i] = pubs[i].substring(1);
+        pubs[i] = pubs[i].trim();
     }
 }
 
