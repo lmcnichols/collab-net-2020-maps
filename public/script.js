@@ -1,3 +1,5 @@
+"use strict";
+
 var map;
 const CURVATURE = 0.5;
 const CALPOLYLATLNG = {lat: 35.3, lng: -120.65};
