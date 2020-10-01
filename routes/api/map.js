@@ -9,6 +9,7 @@ const { performance } = require('perf_hooks');
 // import classes
 var Institution = require('../classes/Institution');
 var Collaborator = require('../classes/Collaborator');
+var Publication = require('../classes/Publication');
 
 /*
     GLOBAL VARIABLES
@@ -69,18 +70,40 @@ router.get('/scrapeData', function(req, res) {
         collaboratorData.set(scopusid, newCollab);
     });
 
+    collaboratorData.forEach(function(cobject, cname) {
+        cobject.publications.forEach(function(pname) {
+            if (publicationData.has(pname)) {
+                var pub = publicationData.get(pname);
+                pub.addAuthor(cobject.scopusid);
+            } else {
+                var newPub = new Publication(pname, cobject.scopusid);
+                publicationData.set(pname, newPub);
+            }
+        });
+    });
+
+
+
     /* These local objects are only for testing, we send them as
        JSON response to check formatting */
+
     /*var localInstMap = {};
     institutionData.forEach(function (value, key) {
         localInstMap[key] = value;
     })
+    res.json(localInstMap)*/
 
-    var localColMap = {};
+    /*var localColMap = {};
     collaboratorData.forEach(function (value, key) {
         localColMap[key] = value;
-    })*/
-    
+    })
+    res.json(localColMap)*/
+
+    /*var localPubMap = {};
+    publicationData.forEach(function (value, key) {
+        localPubMap[key] = value;
+    })
+    res.json(localPubMap)*/
     res.sendStatus(200)
 
     var t2 = performance.now();
