@@ -16,36 +16,34 @@ function initMap() {
   };
 
   map = new google.maps.Map(document.getElementById('map'), options);
-  createMarkers(function(){
-    renderMarkers();
-  });
+  initData(() =>
+    createMarkers(() =>
+      renderMarkers()
+    )
+  );
+}
+
+function initData(_callback) {
+  const url = new URL('http://localhost:3000/api/map/scrapeData');
+  fetch(url)
+    .then(function(response) {
+      console.log(response);
+    })
+    .then(function() {
+      _callback();
+    })
 }
 
 function createMarkers(_callback) {
-  const url = new URL('http://localhost:3000/api/map/collaborators');
+  const url = new URL('http://localhost:3000/api/map/markerLocations');
   fetch(url)
     .then(function(data) {
         return data.json();
-    }).then(function (schools) {
-      /*
-        The commented out code below is used when the response is
-        in the format of an array, as opposed to just a JSON object
-        where the name of the school is the property of the object
-      */
-      /*schoolsMap.forEach(function(value, key) {
-        var lat = value.lat;
-        var lng = value.lng;
-        var pos = new google.maps.LatLng(lat, lng);
-        var marker = new google.maps.Marker({
-          position: pos,
-          map: map
-        });
-      });*/
+    }).then(function (institutions) {
 
-      for (var school in schools) {
-        var pos = new google.maps.LatLng(schools[school]["lat"], schools[school]["lng"]);
-        var name = school;
-        var newMarker = addMarker(pos, name);
+      for (var instname in institutions) {
+        var pos = new google.maps.LatLng(institutions[instname]["lat"], institutions[instname]["lng"]);
+        var newMarker = addMarker(pos, instname);
         markers.push(newMarker);
       }
     
