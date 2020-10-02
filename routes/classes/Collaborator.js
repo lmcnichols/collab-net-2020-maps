@@ -7,7 +7,7 @@ class Collaborator {
         this.name = name;
         this.scopusid = scopusid;
         this.publications = publications;
-        this.friends = {};
+        //this.friends = {};
         this.instname = instname;
     }
 }

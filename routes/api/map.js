@@ -9,6 +9,7 @@ const { performance } = require('perf_hooks');
 // import classes
 var Institution = require('../classes/Institution');
 var Collaborator = require('../classes/Collaborator');
+var Publication = require('../classes/Publication');
 
 /*
     GLOBAL VARIABLES
@@ -69,18 +70,40 @@ router.get('/scrapeData', function(req, res) {
         collaboratorData.set(scopusid, newCollab);
     });
 
+    collaboratorData.forEach(function(cobject, cname) {
+        cobject.publications.forEach(function(pname) {
+            if (publicationData.has(pname)) {
+                var pub = publicationData.get(pname);
+                pub.addAuthor(cobject.scopusid);
+            } else {
+                var newPub = new Publication(pname, cobject.scopusid);
+                publicationData.set(pname, newPub);
+            }
+        });
+    });
+
+
+
     /* These local objects are only for testing, we send them as
        JSON response to check formatting */
+
     /*var localInstMap = {};
     institutionData.forEach(function (value, key) {
         localInstMap[key] = value;
     })
+    res.json(localInstMap)*/
 
-    var localColMap = {};
+    /*var localColMap = {};
     collaboratorData.forEach(function (value, key) {
         localColMap[key] = value;
-    })*/
-    
+    })
+    res.json(localColMap)*/
+
+    /*var localPubMap = {};
+    publicationData.forEach(function (value, key) {
+        localPubMap[key] = value;
+    })
+    res.json(localPubMap)*/
     res.sendStatus(200)
 
     var t2 = performance.now();
@@ -94,46 +117,18 @@ function cleanPublications(pubs) {
     }
 }
 
-/* Get all schools */
-router.get('/collaborators', function(req, res) {
-    var obj = fs.readFileSync(GRAPH_FILE, 'utf-8', function(err, fileContents) {
-        if (err) throw err;
-        return fileContents;
-    });
+/* Get all marker locations */
+router.get('/markerLocations', function(req, res) {
+    var institutions = {};
 
-    /* The commented out code below is used when the response is
-       in the format of an array, as opposed to just a JSON object
-       where the name of the school is the property of the object */
-    /*var schoolsSet = new Set();
-    var schools = [];
-    
-    JSON.parse(obj).features.forEach(function(collaborator) {
-        var schoolName = collaborator.properties.personalInfo.attributes.AffName;
-        if (!schoolsSet.has(schoolName)) {
-            schoolsSet.add(schoolName);
-            var lat = collaborator.geometry.coordinates[0];
-            var lng = collaborator.geometry.coordinates[1];
-            schools.push({
-                "lat": lat,
-                "lng": lng
-            })
+    institutionData.forEach(function(instobject, instname) {
+        institutions[instname] = {
+            "lat" : instobject.location[0],
+            "lng" : instobject.location[1]
         };
-    });*/
-
-    var schools = {};
-    JSON.parse(obj).features.forEach(function(collaborator) {
-        var schoolName = collaborator.properties.personalInfo.attributes.AffName;
-        if (!schools.hasOwnProperty(schoolName)) {
-            var lat = collaborator.geometry.coordinates[0];
-            var lng = collaborator.geometry.coordinates[1];
-            schools[schoolName] = {
-                "lat": lat,
-                "lng": lng
-            };
-        }
     });
 
-    res.send(schools);
+    res.send(institutions);
 })
 
 module.exports = router;
