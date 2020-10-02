@@ -42,8 +42,10 @@ function createMarkers(_callback) {
     }).then(function (institutions) {
 
       for (var instname in institutions) {
-        var pos = new google.maps.LatLng(institutions[instname]["lat"], institutions[instname]["lng"]);
-        var newMarker = addMarker(pos, instname);
+        var pos = new google.maps.LatLng(institutions[instname]["location"]["lat"], 
+          institutions[instname]["location"]["lng"]);
+        var collaborators = institutions[instname]["collaborators"];
+        var newMarker = addMarker(pos, instname, collaborators);
         markers.push(newMarker);
       }
     
@@ -58,7 +60,7 @@ function renderMarkers() {
     });
 }
 
-function addMarker(position, name){
+function addMarker(position, name, collaborators){
   const defaultIcon = makeMarkerIcon('0091ff');
   // Create a "highlighted location" marker color for when the user
   // mouses over the marker.
@@ -67,7 +69,8 @@ function addMarker(position, name){
   const marker = new google.maps.Marker({
       position: position,
       icon: defaultIcon,
-      title: name
+      title: name,
+      collaborators: collaborators
   });
     
   var infowindow = new google.maps.InfoWindow();
@@ -104,7 +107,7 @@ function makeMarkerIcon(markerColor) {
 function populateInfoWindow(map, marker, infowindow) {
   // Check to make sure the infowindow is not already opened on this marker.
   if (infowindow.marker != marker) {
-    infowindow.setContent(marker.title);
+    infowindow.setContent(marker.collaborators.toString());
     infowindow.marker = marker;
     // Make sure the marker property is cleared if the infowindow is closed.
     infowindow.addListener('closeclick', function () {

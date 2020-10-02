@@ -123,8 +123,12 @@ router.get('/markerLocations', function(req, res) {
 
     institutionData.forEach(function(instobject, instname) {
         institutions[instname] = {
-            "lat" : instobject.location[0],
-            "lng" : instobject.location[1]
+            "location" : {
+                "lat" : instobject.location[0],
+                "lng" : instobject.location[1]
+            },
+            "collaborators" : instobject.collaborators
+    
         };
     });
 
