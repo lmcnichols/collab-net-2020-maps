@@ -19,7 +19,6 @@ var Publication = require('../classes/Publication');
 
 /* ================================================== */
 const GRAPH_FILE = 'outGraph.json';
-//var data = {};
 var institutionData = new Map();
 var collaboratorData = new Map();
 var publicationData = new Map();
@@ -87,24 +86,28 @@ router.get('/scrapeData', function(req, res) {
     /* These local objects are only for testing, we send them as
        JSON response to check formatting */
 
-    /*var localInstMap = {};
+    var localInstMap = {};
     institutionData.forEach(function (value, key) {
         localInstMap[key] = value;
     })
-    res.json(localInstMap)*/
 
-    /*var localColMap = {};
+    var localColMap = {};
     collaboratorData.forEach(function (value, key) {
         localColMap[key] = value;
     })
-    res.json(localColMap)*/
 
-    /*var localPubMap = {};
+    var localPubMap = {};
     publicationData.forEach(function (value, key) {
         localPubMap[key] = value;
     })
-    res.json(localPubMap)*/
-    res.sendStatus(200)
+
+    var data = {
+        "institutions" : localInstMap,
+        "collaborators" : localColMap,
+        "publications" : localPubMap
+    };
+
+    res.send(data);
 
     var t2 = performance.now();
     console.log(`This took ${(t2 - t1) / 1000} seconds`);

@@ -5,9 +5,10 @@ const CURVATURE = 0.5;
 const CALPOLYLATLNG = {lat: 35.3, lng: -120.65};
 const ZOOM = 6;
 
-var markers = [];
+var data;
+var markers = new Map();
 
-function initMap() {
+async function initMap() {
   var options = {
     center: CALPOLYLATLNG,
     zoom: ZOOM,
@@ -16,22 +17,27 @@ function initMap() {
   };
 
   map = new google.maps.Map(document.getElementById('map'), options);
-  initData(() =>
-    createMarkers(() =>
-      renderMarkers()
-    )
-  );
+  data = await initData();
+  initMarkers();
+  renderMarkers();
 }
 
-function initData(_callback) {
+async function initData() {
   const url = new URL('http://localhost:3000/api/map/scrapeData');
-  fetch(url)
-    .then(function(response) {
-      console.log(response);
-    })
-    .then(function() {
-      _callback();
-    })
+  
+  var response = await fetch(url);
+
+  if (response.ok) {
+    return response.json();
+  }
+}
+
+function initMarkers() {
+  Object.values(data["institutions"]).forEach(function (inst) {
+    var pos = new google.maps.LatLng(inst["location"][0], inst["location"][1]);
+    var newMarker = addMarker(pos, inst["name"]);
+    markers.set(inst["name"], newMarker);
+  })
 }
 
 function createMarkers(_callback) {
@@ -44,7 +50,7 @@ function createMarkers(_callback) {
       for (var instname in institutions) {
         var pos = new google.maps.LatLng(institutions[instname]["lat"], institutions[instname]["lng"]);
         var newMarker = addMarker(pos, instname);
-        markers.push(newMarker);
+        markers.set(instname, newMarker);
       }
     
     }).then(function() {
@@ -53,7 +59,7 @@ function createMarkers(_callback) {
 }
 
 function renderMarkers() {
-    markers.forEach(function(marker) {
+    markers.forEach(function(marker, instname) {
       marker.setMap(map);
     });
 }
