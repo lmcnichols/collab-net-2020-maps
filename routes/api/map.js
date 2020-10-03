@@ -57,9 +57,9 @@ router.get('/scrapeData', function(req, res) {
         if (institutionData.has(instname)) {
             var inst = institutionData.get(instname);
             inst.addPublications(publications);
-            inst.addCollaborator(name);
+            inst.addCollaborator(scopusid);
         } else {
-            var newInst = new Institution(instname, count, location, publications, name);
+            var newInst = new Institution(instname, count, location, publications, scopusid);
             institutionData.set(instname, newInst);
             count++;
         }

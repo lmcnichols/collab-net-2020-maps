@@ -6,7 +6,11 @@ const CALPOLYLATLNG = {lat: 35.3, lng: -120.65};
 const ZOOM = 6;
 
 var data;
+var institutions;
+var collaborators;
+var publications;
 var markers = new Map();
+var edges = new Map();
 
 async function initMap() {
   var options = {
@@ -15,11 +19,20 @@ async function initMap() {
     mapTypeControl: false
 
   };
-
   map = new google.maps.Map(document.getElementById('map'), options);
+
+  // fetch data from the API
   data = await initData();
+  institutions = data["institutions"];
+  collaborators = data["collaborators"];
+  publications = data["publications"];
+
+  // first create markers and render them
   initMarkers();
   renderMarkers();
+
+  // then worry about creating the edge objects
+  initEdges();
 }
 
 async function initData() {
@@ -40,6 +53,7 @@ function initMarkers() {
   })
 }
 
+/* I don't think we need this anymore
 function createMarkers(_callback) {
   const url = new URL('http://localhost:3000/api/map/markerLocations');
   fetch(url)
@@ -57,7 +71,7 @@ function createMarkers(_callback) {
       _callback();
     });
 }
-
+*/
 function renderMarkers() {
     markers.forEach(function(marker, instname) {
       marker.setMap(map);
@@ -118,6 +132,106 @@ function populateInfoWindow(map, marker, infowindow) {
     });
     infowindow.open(map, marker);
   }
-} 
+}
+function initEdges() {
+  Object.values(institutions).forEach(function (curInst) {
+    var edgeMap = new Map();  // each institution gets a map of collaborating inst -> curveMarker
+    var curMarker = markers.get(curInst["name"])
+    var pos1 = curMarker.getPosition();
 
+    // get collaborating institutions for each publication done by the current inst
+    curInst["publications"].forEach(function (title) {
+      // get all authors for the current title
+      publications[title]["authors"].forEach(function (authorId) {
+        var colInst = collaborators[authorId]["instname"];
 
+        // if the collaborating inst is not the current inst AND
+        // if the current inst's edgeMap does not contain an edge to
+        // the collaborating inst, create it
+        if (colInst != curInst["name"] && !edgeMap.has(colInst)) {
+          // create the marker
+          var curveMarker = new google.maps.Marker({
+            position: pos1,
+            clickable: false,
+            zIndex: 0 // behind the other markers
+            //map: map
+          });
+          var pos2 = markers.get(colInst).getPosition();
+          calculateCurve(pos1, pos2, curveMarker);
+          console.log(curveMarker)
+
+          // update the edgeMap
+          edgeMap.set(colInst, curveMarker);
+
+          // add listeners to the curvemarker to re-draw the projection
+          // if the dimensions of the map changes
+          google.maps.event.addListener(map, 'projection_changed', calculateCurve(pos1, pos2, curveMarker));
+          google.maps.event.addListener(map, 'zoom_changed', calculateCurve(pos1, pos2, curveMarker));
+        }
+      });
+    });
+
+    // add current inst's edgeMap to the edges map
+    edges.set(curInst, edgeMap)
+
+    // add listener to show or hide edges when current marker is clicked
+    google.maps.event.addListener(curMarker, 'click', showHideEdges(curInst));
+  });
+}
+
+// pass in marker.getPosition()
+function calculateCurve(pos1, pos2, curveMarker) {
+  var projection = map.getProjection(),
+  p1 = projection.fromLatLngToPoint(pos1), // xy
+  p2 = projection.fromLatLngToPoint(pos2);
+
+  // Calculate the arc.
+  // To simplify the math, these points 
+  // are all relative to p1:
+  var e = new google.maps.Point(p2.x - p1.x, p2.y - p1.y), // endpoint (p2 relative to p1)
+      m = new google.maps.Point(e.x / 2, e.y / 2), // midpoint
+      o = new google.maps.Point(e.y, -e.x), // orthogonal
+      c = new google.maps.Point( // curve control point
+        m.x + CURVATURE * o.x,
+        m.y + CURVATURE * o.y);
+
+  var pathDef = 'M 0,0 ' +
+    'q ' + c.x + ',' + c.y + ' ' + e.x + ',' + e.y;
+
+  var zoom = map.getZoom(),
+    scale = 1 / (Math.pow(2, -zoom));
+
+  var symbol = {
+    path: pathDef,
+    scale: scale,
+    strokeWeight: 2,
+    fillColor: 'none'
+  };
+
+  if (!curveMarker) {
+    curveMarker = new google.maps.Marker({
+        position: pos1,
+        clickable: false,
+        zIndex: 0, // behind the other markers
+        //map: map
+    });
+  } else {
+    curveMarker.setOptions({
+        position: pos1,
+        icon: symbol,
+    });
+  }
+}
+
+function showHideEdges(instname) {
+  var edgeMap = edges.get(instname);
+  //console.log(edgeMap)
+  edgeMap.forEach(function (curveMarker, toInst) {
+    //console.log(curveMarker)
+    if (curveMarker.getMap() === null) {
+      curveMarker.setMap(map);
+    } else {
+      curveMarker.setMap(null);
+    }
+  })
+}

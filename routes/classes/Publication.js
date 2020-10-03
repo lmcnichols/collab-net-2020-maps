@@ -5,11 +5,11 @@
 class Publication {
     constructor(title, authorId) {
         this.title = title;
-        this.authorsById = [authorId]
+        this.authors = [authorId]
     }
 
     addAuthor(authorId) {
-        this.authorsById.push(authorId)
+        this.authors.push(authorId)
     }
 }
 

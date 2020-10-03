@@ -2,12 +2,12 @@
 
 // class representing an institution
 class Institution {
-    constructor(name, id, location, publications, collaborator) {
+    constructor(name, id, location, publications, colScopus) {
         this.name = name;
         this.id = id;
         this.location = location;
         this.publications = publications;
-        this.collaborators = [collaborator];
+        this.collaborators = [colScopus];
     }
 
     addPublications(publications) {
@@ -18,8 +18,8 @@ class Institution {
         }
     }
 
-    addCollaborator(collaborator) {
-        this.collaborators.push(collaborator);
+    addCollaborator(colScopus) {
+        this.collaborators.push(colScopus);
     }
 }
 
