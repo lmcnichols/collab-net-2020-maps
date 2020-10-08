@@ -17,7 +17,6 @@ async function initMap() {
     center: CALPOLYLATLNG,
     zoom: ZOOM,
     mapTypeControl: false
-
   };
   map = new google.maps.Map(document.getElementById('map'), options);
 
@@ -30,9 +29,6 @@ async function initMap() {
   // first create markers and render them
   initMarkers();
   renderMarkers();
-
-  // then worry about creating the edge objects
-  initEdges();
 }
 
 async function initData() {
@@ -46,39 +42,20 @@ async function initData() {
 }
 
 function initMarkers() {
-  Object.values(data["institutions"]).forEach(function (inst) {
-    var pos = new google.maps.LatLng(inst["location"][0], inst["location"][1]);
-    var newMarker = addMarker(pos, inst["name"]);
-    markers.set(inst["name"], newMarker);
+  Object.values(institutions).forEach(function (inst) {
+    var newMarker = addMarker(inst);
+    markers.set(inst["id"], newMarker);
   })
 }
 
-/* I don't think we need this anymore
-function createMarkers(_callback) {
-  const url = new URL('http://localhost:3000/api/map/markerLocations');
-  fetch(url)
-    .then(function(data) {
-        return data.json();
-    }).then(function (institutions) {
-
-      for (var instname in institutions) {
-        var pos = new google.maps.LatLng(institutions[instname]["lat"], institutions[instname]["lng"]);
-        var newMarker = addMarker(pos, instname);
-        markers.set(instname, newMarker);
-      }
-    
-    }).then(function() {
-      _callback();
-    });
-}
-*/
 function renderMarkers() {
     markers.forEach(function(marker, instname) {
       marker.setMap(map);
     });
 }
 
-function addMarker(position, name){
+function addMarker(inst){
+  const position = new google.maps.LatLng(inst["location"][0], inst["location"][1]);
   const defaultIcon = makeMarkerIcon('0091ff');
   // Create a "highlighted location" marker color for when the user
   // mouses over the marker.
@@ -87,14 +64,16 @@ function addMarker(position, name){
   const marker = new google.maps.Marker({
       position: position,
       icon: defaultIcon,
-      title: name
+      title: inst["name"],
+      instid: inst["id"]
   });
     
   var infowindow = new google.maps.InfoWindow();
   // When marker is clicked infowindow pops up
-  google.maps.event.addListener(marker, 'click', function(){
+  marker.addListener('click', function(){
       populateInfoWindow(map, marker, infowindow)
   });
+
   // Two event listeners - one for mouseover, one for mouseout,
   // to change the colors back and forth.
   marker.addListener('mouseover', function() {
@@ -102,6 +81,11 @@ function addMarker(position, name){
   });
   marker.addListener('mouseout', function() {
     this.setIcon(defaultIcon);
+  });
+
+  // add listener to show or hide edges when current marker is clicked
+  marker.addListener('click', function() {
+    showHideEdges(inst["id"]);
   });
 
   return marker;
@@ -133,50 +117,52 @@ function populateInfoWindow(map, marker, infowindow) {
     infowindow.open(map, marker);
   }
 }
-function initEdges() {
-  Object.values(institutions).forEach(function (curInst) {
-    var edgeMap = new Map();  // each institution gets a map of collaborating inst -> curveMarker
-    var curMarker = markers.get(curInst["name"])
-    var pos1 = curMarker.getPosition();
 
-    // get collaborating institutions for each publication done by the current inst
-    curInst["publications"].forEach(function (title) {
-      // get all authors for the current title
-      publications[title]["authors"].forEach(function (authorId) {
-        var colInst = collaborators[authorId]["instname"];
+async function getEdges(instid) {
+  // build URL with search params
+  const url = new URL("http://localhost:3000/api/map/getEdges"),
+    params = {instid : instid}
+  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
 
-        // if the collaborating inst is not the current inst AND
-        // if the current inst's edgeMap does not contain an edge to
-        // the collaborating inst, create it
-        if (colInst != curInst["name"] && !edgeMap.has(colInst)) {
-          // create the marker
-          var curveMarker = new google.maps.Marker({
-            position: pos1,
-            clickable: false,
-            zIndex: 0 // behind the other markers
-            //map: map
-          });
-          var pos2 = markers.get(colInst).getPosition();
-          calculateCurve(pos1, pos2, curveMarker);
-          console.log(curveMarker)
+  // call fetch
+  var obj = await fetch(url).
+    then(function(res) {
+      return res.json();
+    })
 
-          // update the edgeMap
-          edgeMap.set(colInst, curveMarker);
+  buildEdges(instid, obj);
+}
 
-          // add listeners to the curvemarker to re-draw the projection
-          // if the dimensions of the map changes
-          google.maps.event.addListener(map, 'projection_changed', calculateCurve(pos1, pos2, curveMarker));
-          google.maps.event.addListener(map, 'zoom_changed', calculateCurve(pos1, pos2, curveMarker));
-        }
-      });
+function buildEdges(sourceid, obj) {
+  var edgeMap = new Map();
+  var curMarker = markers.get(sourceid);
+  var pos1 = curMarker.getPosition();
+
+  Object.keys(obj).forEach(function(instidstr) {
+    var instid = parseInt(instidstr);
+    var curveMarker = new google.maps.Marker({
+      position: pos1,
+      clickable: false,
+      zIndex: 0 // behind the other markers
     });
+    var pos2 = markers.get(instid).getPosition();
+    calculateCurve(pos1, pos2, curveMarker);
 
-    // add current inst's edgeMap to the edges map
-    edges.set(curInst, edgeMap)
+    // update the edgeMap
+    edgeMap.set(instid, curveMarker);
 
-    // add listener to show or hide edges when current marker is clicked
-    google.maps.event.addListener(curMarker, 'click', showHideEdges(curInst));
+    // add listeners to the curvemarker to re-draw the projection
+    // if the dimensions of the map changes
+    map.addListener('projection_changed', function() {
+      calculateCurve(pos1, pos2, curveMarker);
+    });
+    map.addListener('zoom_changed', function() {
+      calculateCurve(pos1, pos2, curveMarker);
+    });
   });
+
+  // add current inst's edgeMap to the edges map
+  edges.set(sourceid, edgeMap)
 }
 
 // pass in marker.getPosition()
@@ -208,27 +194,22 @@ function calculateCurve(pos1, pos2, curveMarker) {
     fillColor: 'none'
   };
 
-  if (!curveMarker) {
-    curveMarker = new google.maps.Marker({
-        position: pos1,
-        clickable: false,
-        zIndex: 0, // behind the other markers
-        //map: map
-    });
-  } else {
-    curveMarker.setOptions({
-        position: pos1,
-        icon: symbol,
-    });
-  }
+  curveMarker.setOptions({
+      position: pos1,
+      icon: symbol,
+  });
 }
 
-function showHideEdges(instname) {
-  var edgeMap = edges.get(instname);
-  //console.log(edgeMap)
+async function showHideEdges(instid) {
+  // if the marker doesn't have its edges yet, get them
+  if (!edges.has(instid)) {
+    await getEdges(instid);
+  }
+
+  var edgeMap = edges.get(instid);
   edgeMap.forEach(function (curveMarker, toInst) {
-    //console.log(curveMarker)
-    if (curveMarker.getMap() === null) {
+    if (curveMarker.getMap() == null) {
+      console.log("map is null, setting now");
       curveMarker.setMap(map);
     } else {
       curveMarker.setMap(null);
