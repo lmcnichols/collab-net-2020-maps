@@ -65,13 +65,15 @@ function addMarker(inst){
       position: position,
       icon: defaultIcon,
       title: inst["name"],
-      instid: inst["id"]
+      instid: inst["id"],
+      lines: []
   });
     
   var infowindow = new google.maps.InfoWindow();
   // When marker is clicked infowindow pops up
   marker.addListener('click', function(){
-      populateInfoWindow(map, marker, infowindow)
+      populateInfoWindow(map, marker, infowindow),
+      showHideEdges(inst["id"]);
   });
 
   // Two event listeners - one for mouseover, one for mouseout,
@@ -82,12 +84,6 @@ function addMarker(inst){
   marker.addListener('mouseout', function() {
     this.setIcon(defaultIcon);
   });
-
-  // add listener to show or hide edges when current marker is clicked
-  marker.addListener('click', function() {
-    showHideEdges(inst["id"]);
-  });
-
   return marker;
 }
 
@@ -111,12 +107,26 @@ function populateInfoWindow(map, marker, infowindow) {
     infowindow.setContent(marker.title);
     infowindow.marker = marker;
     // Make sure the marker property is cleared if the infowindow is closed.
-    infowindow.addListener('closeclick', function () {
+    marker.addListener('closeclick', function () {
       infowindow.marker = null;
     });
     infowindow.open(map, marker);
   }
 }
+/*google.maps.event.addListener(marker, 'click', function() {
+  if(!marker.open){
+      infoWindow.open(map,marker);
+      marker.open = true;
+  }
+  else{
+      infoWindow.close();
+      marker.open = false;
+  }
+  google.maps.event.addListener(map, 'click', function() {
+      infoWindow.close();
+      marker.open = false;
+  });
+});*/
 
 async function getEdges(instid) {
   // build URL with search params
@@ -134,7 +144,40 @@ async function getEdges(instid) {
 }
 
 function buildEdges(sourceid, obj) {
+
   var edgeMap = new Map();
+  var curMarker = markers.get(sourceid);
+
+  Object.keys(obj).forEach(function(instidstr) {
+    var instid = parseInt(instidstr);
+    var marker2 = markers.get(instid)
+
+    drawCurve(curMarker, marker2);
+
+    // edgeMap maps the instid to a marker that contains a list of edges 
+    edgeMap.set(instid, curMarker);
+
+    edges.set(sourceid, edgeMap)
+  });
+  
+}
+  
+function drawCurve(curMarker, marker2){
+  var path = [curMarker.getPosition(), marker2.getPosition()];
+  var line = new google.maps.Polyline({
+        path: path,
+        geodesic: true,
+        strokeColor: '#000000',
+        strokeOpacity: 1.0,
+        strokeWeight: 1
+  });
+  curMarker.lines.push(line); 
+  google.maps.event.addListener(line, 'mouseover', function() {
+    console.log("mouseover");
+    // highlightLine(line, path);
+});
+}
+  /*var edgeMap = new Map();
   var curMarker = markers.get(sourceid);
   var pos1 = curMarker.getPosition();
 
@@ -162,11 +205,13 @@ function buildEdges(sourceid, obj) {
   });
 
   // add current inst's edgeMap to the edges map
-  edges.set(sourceid, edgeMap)
-}
+  edges.set(sourceid, edgeMap)*/
+
+
+
 
 // pass in marker.getPosition()
-function calculateCurve(pos1, pos2, curveMarker) {
+/*function calculateCurve(pos1, pos2, curveMarker) {
   var projection = map.getProjection(),
   p1 = projection.fromLatLngToPoint(pos1), // xy
   p2 = projection.fromLatLngToPoint(pos2);
@@ -198,21 +243,21 @@ function calculateCurve(pos1, pos2, curveMarker) {
       position: pos1,
       icon: symbol,
   });
-}
+}*/
 
 async function showHideEdges(instid) {
   // if the marker doesn't have its edges yet, get them
   if (!edges.has(instid)) {
     await getEdges(instid);
   }
-
-  var edgeMap = edges.get(instid);
-  edgeMap.forEach(function (curveMarker, toInst) {
-    if (curveMarker.getMap() == null) {
+  var curMarker = markers.get(instid);
+  curMarker.lines.forEach(function(line) {
+    if (line.getMap() == null) {
       console.log("map is null, setting now");
-      curveMarker.setMap(map);
+      line.setMap(map);
     } else {
-      curveMarker.setMap(null);
+      line.setMap(null);
     }
   })
 }
+
