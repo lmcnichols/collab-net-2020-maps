@@ -109,40 +109,9 @@ function populateInfoWindow(map, marker, infowindow) {
     infowindow.setContent(marker.title);
     infowindow.marker = marker;
     infowindow.open(map,marker);
-    // Make sure the marker property is cleared if the infowindow is closed.
   } 
-  /*if(!marker.open){
-    infowindow.open(map,marker);
-    marker.open = true;
-  }
-  else{
-      infowindow.close();
-      marker.open = false;
-  }
-  google.maps.event.addListener(map, 'click', function() {
-      infoindow.close();
-      marker.open = false;
-  });*/
-  /*marker.addListener('closeclick', function () {
-    infowindow.marker = null;
-  });
-  infowindow.open(map, marker);*/
 }
 
-/*google.maps.event.addListener(marker, 'click', function() {
-  if(!marker.open){
-      infoWindow.open(map,marker);
-      marker.open = true;
-  }
-  else{
-      infoWindow.close();
-      marker.open = false;
-  }
-  google.maps.event.addListener(map, 'click', function() {
-      infoWindow.close();
-      marker.open = false;
-  });
-});*/
 
 async function getEdges(instid) {
   // build URL with search params
@@ -161,7 +130,7 @@ async function getEdges(instid) {
 
 function buildEdges(sourceid, obj) {
 
-  var edgeMap = new Map();
+  //var edgeMap = new Map();
   var curMarker = markers.get(sourceid);
 
   Object.keys(obj).forEach(function(instidstr) {
@@ -171,9 +140,9 @@ function buildEdges(sourceid, obj) {
     drawCurve(curMarker, marker2);
 
     // edgeMap maps the instid to a marker that contains a list of edges 
-    edgeMap.set(instid, curMarker);
+   // edgeMap.set(instid, curMarker);
 
-    edges.set(sourceid, edgeMap)
+    edges.set(sourceid, curMarker)
   });
   
 }
