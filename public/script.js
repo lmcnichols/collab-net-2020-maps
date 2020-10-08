@@ -159,76 +159,10 @@ function drawCurve(curMarker, marker2){
   curMarker.lines.push(line); 
   google.maps.event.addListener(line, 'mouseover', function() {
     console.log("mouseover");
-    // highlightLine(line, path);
+     highlightLine(line, path);
 });
 }
-  /*var edgeMap = new Map();
-  var curMarker = markers.get(sourceid);
-  var pos1 = curMarker.getPosition();
 
-  Object.keys(obj).forEach(function(instidstr) {
-    var instid = parseInt(instidstr);
-    var curveMarker = new google.maps.Marker({
-      position: pos1,
-      clickable: false,
-      zIndex: 0 // behind the other markers
-    });
-    var pos2 = markers.get(instid).getPosition();
-    calculateCurve(pos1, pos2, curveMarker);
-
-    // update the edgeMap
-    edgeMap.set(instid, curveMarker);
-
-    // add listeners to the curvemarker to re-draw the projection
-    // if the dimensions of the map changes
-    map.addListener('projection_changed', function() {
-      calculateCurve(pos1, pos2, curveMarker);
-    });
-    map.addListener('zoom_changed', function() {
-      calculateCurve(pos1, pos2, curveMarker);
-    });
-  });
-
-  // add current inst's edgeMap to the edges map
-  edges.set(sourceid, edgeMap)*/
-
-
-
-
-// pass in marker.getPosition()
-/*function calculateCurve(pos1, pos2, curveMarker) {
-  var projection = map.getProjection(),
-  p1 = projection.fromLatLngToPoint(pos1), // xy
-  p2 = projection.fromLatLngToPoint(pos2);
-
-  // Calculate the arc.
-  // To simplify the math, these points 
-  // are all relative to p1:
-  var e = new google.maps.Point(p2.x - p1.x, p2.y - p1.y), // endpoint (p2 relative to p1)
-      m = new google.maps.Point(e.x / 2, e.y / 2), // midpoint
-      o = new google.maps.Point(e.y, -e.x), // orthogonal
-      c = new google.maps.Point( // curve control point
-        m.x + CURVATURE * o.x,
-        m.y + CURVATURE * o.y);
-
-  var pathDef = 'M 0,0 ' +
-    'q ' + c.x + ',' + c.y + ' ' + e.x + ',' + e.y;
-
-  var zoom = map.getZoom(),
-    scale = 1 / (Math.pow(2, -zoom));
-
-  var symbol = {
-    path: pathDef,
-    scale: scale,
-    strokeWeight: 2,
-    fillColor: 'none'
-  };
-
-  curveMarker.setOptions({
-      position: pos1,
-      icon: symbol,
-  });
-}*/
 
 async function showHideEdges(instid) {
   // if the marker doesn't have its edges yet, get them
@@ -244,5 +178,24 @@ async function showHideEdges(instid) {
       line.setMap(null);
     }
   })
+}
+
+
+function highlightLine(line, path){
+  line.setMap(null);
+  var highlightedLine = new google.maps.Polyline({
+          path: path,
+          geodesic: true,
+          strokeColor: '#FFFF24',
+          strokeOpacity: 1.0,
+          strokeWeight: 3
+      });
+      highlightedLine.setMap(map);
+
+      google.maps.event.addListener(highlightedLine, 'mouseout', function(){
+        console.log('mouseout');
+        highlightedLine.setMap(null);
+        line.setMap(map);
+    });
 }
 
