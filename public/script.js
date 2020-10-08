@@ -4,6 +4,7 @@ var map;
 const CURVATURE = 0.5;
 const CALPOLYLATLNG = {lat: 35.3, lng: -120.65};
 const ZOOM = 6;
+var infowindow;
 
 var data;
 var institutions;
@@ -12,6 +13,7 @@ var publications;
 var markers = new Map();
 var edges = new Map();
 
+
 async function initMap() {
   var options = {
     center: CALPOLYLATLNG,
@@ -19,6 +21,7 @@ async function initMap() {
     mapTypeControl: false
   };
   map = new google.maps.Map(document.getElementById('map'), options);
+  infowindow = new google.maps.InfoWindow();
 
   // fetch data from the API
   data = await initData();
@@ -69,7 +72,6 @@ function addMarker(inst){
       lines: []
   });
     
-  var infowindow = new google.maps.InfoWindow();
   // When marker is clicked infowindow pops up
   marker.addListener('click', function(){
       populateInfoWindow(map, marker, infowindow),
@@ -106,13 +108,27 @@ function populateInfoWindow(map, marker, infowindow) {
   if (infowindow.marker != marker) {
     infowindow.setContent(marker.title);
     infowindow.marker = marker;
+    infowindow.open(map,marker);
     // Make sure the marker property is cleared if the infowindow is closed.
-    marker.addListener('closeclick', function () {
-      infowindow.marker = null;
-    });
-    infowindow.open(map, marker);
+  } 
+  /*if(!marker.open){
+    infowindow.open(map,marker);
+    marker.open = true;
   }
+  else{
+      infowindow.close();
+      marker.open = false;
+  }
+  google.maps.event.addListener(map, 'click', function() {
+      infoindow.close();
+      marker.open = false;
+  });*/
+  /*marker.addListener('closeclick', function () {
+    infowindow.marker = null;
+  });
+  infowindow.open(map, marker);*/
 }
+
 /*google.maps.event.addListener(marker, 'click', function() {
   if(!marker.open){
       infoWindow.open(map,marker);
