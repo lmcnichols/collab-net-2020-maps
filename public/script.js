@@ -103,15 +103,6 @@ function makeMarkerIcon(markerColor) {
   return markerImage;
 }
 
-function populateInfoWindow(map, marker, infowindow) {
-  // Check to make sure the infowindow is not already opened on this marker.
-  if (infowindow.marker != marker) {
-    infowindow.setContent(marker.title);
-    infowindow.marker = marker;
-    infowindow.open(map,marker);
-  } 
-}
-
 
 async function getEdges(instid) {
   // build URL with search params
@@ -178,6 +169,21 @@ async function showHideEdges(instid) {
       line.setMap(null);
     }
   })
+}
+
+function populateInfoWindow(map, marker, infowindow) {
+  // Check to make sure the infowindow is not already opened on this marker.
+
+  // Close the info window if marker is clicked twice 
+  if (infowindow.marker == marker) {
+    infowindow.close();
+  }
+  // If a different marker is clicked close current window and open new one 
+  if (infowindow.marker != marker) {
+    infowindow.setContent(marker.title);
+    infowindow.marker = marker;
+    infowindow.open(map,marker);
+  } 
 }
 
 
