@@ -2,7 +2,7 @@
 
 var map;
 const CURVATURE = 0.5;
-const CALPOLYLATLNG = {lat: 35.3, lng: -120.65};
+const CALPOLYLATLNG = {lat: 39, lng: -112.65};
 const ZOOM = 6;
 var infowindow;
 
