@@ -46,15 +46,9 @@ async function initData() {
 
 function initMarkers() {
   // Initialize the info on the side bar 
-  var side_html = '<table style="border-collapse: collapse" border="1" \
-  cellpadding="5"> \
-    <thead> \
-      <tr style="background-color:#e0e0e0"> \
-        <th>City</th> \
-        <th>Population</th> \
-      </tr> \
-    </thead> \
-    <tbody>';
+  var side_html = '<h1>Academic Collaboration Network</h1> \
+  <h2>Institutions</h2>';
+ 
   console.log(side_html);
   Object.values(institutions).forEach(function (inst) {
     var newMarker = addMarker(inst, side_html);
