@@ -2,7 +2,7 @@
 
 var map;
 const CURVATURE = 0.5;
-const CALPOLYLATLNG = {lat: 39, lng: -112.65};
+const CALPOLYLATLNG = {lat: 37, lng: -115.65};
 const ZOOM = 6;
 var infowindow;
 
@@ -45,10 +45,22 @@ async function initData() {
 }
 
 function initMarkers() {
+  // Initialize the info on the side bar 
+  var side_html = '<table style="border-collapse: collapse" border="1" \
+  cellpadding="5"> \
+    <thead> \
+      <tr style="background-color:#e0e0e0"> \
+        <th>City</th> \
+        <th>Population</th> \
+      </tr> \
+    </thead> \
+    <tbody>';
+  console.log(side_html);
   Object.values(institutions).forEach(function (inst) {
-    var newMarker = addMarker(inst);
+    var newMarker = addMarker(inst, side_html);
     markers.set(inst["id"], newMarker);
   })
+  document.getElementById("sidebar").innerHTML = side_html;
 }
 
 function renderMarkers() {
@@ -57,7 +69,8 @@ function renderMarkers() {
     });
 }
 
-function addMarker(inst){
+function addMarker(inst, side_html){
+
   const position = new google.maps.LatLng(inst["location"][0], inst["location"][1]);
   const defaultIcon = makeMarkerIcon('0091ff');
   // Create a "highlighted location" marker color for when the user
@@ -71,7 +84,11 @@ function addMarker(inst){
       instid: inst["id"],
       lines: []
   });
-    
+  //console.log()
+  /*side_html += '<tr> \
+  <td><a href="javascript:myclick(' + marker.instid + ')">' + marker.title + '</a></td> \
+</tr>';*/
+  
   // When marker is clicked infowindow pops up
   marker.addListener('click', function(){
       populateInfoWindow(map, marker, infowindow),
@@ -101,6 +118,10 @@ function makeMarkerIcon(markerColor) {
     new google.maps.Point(10, 34),
     new google.maps.Size(21,34));
   return markerImage;
+}
+
+function myclick(instid) {
+  google.maps.event.trigger(markers.get(instid), "click");
 }
 
 
