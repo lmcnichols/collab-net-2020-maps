@@ -46,14 +46,14 @@ async function initData() {
 
 function initMarkers() {
   // Initialize the info on the side bar 
-  var side_html = '<h1>Academic Collaboration Network</h1> \
-  <h2>Institutions</h2>';
+  var side_html = '';
  
-  console.log(side_html);
   Object.values(institutions).forEach(function (inst) {
     var newMarker = addMarker(inst, side_html);
     markers.set(inst["id"], newMarker);
   })
+  side_html+='<h1>Academic Collaboration Network</h1> \
+  <h2>Institutions</h2>'+populateSideBar(markers, side_html);
   document.getElementById("sidebar").innerHTML = side_html;
 }
 
@@ -64,7 +64,6 @@ function renderMarkers() {
 }
 
 function addMarker(inst, side_html){
-
   const position = new google.maps.LatLng(inst["location"][0], inst["location"][1]);
   const defaultIcon = makeMarkerIcon('0091ff');
   // Create a "highlighted location" marker color for when the user
@@ -78,10 +77,9 @@ function addMarker(inst, side_html){
       instid: inst["id"],
       lines: []
   });
-  //console.log()
-  /*side_html += '<tr> \
-  <td><a href="javascript:myclick(' + marker.instid + ')">' + marker.title + '</a></td> \
-</tr>';*/
+  
+
+
   
   // When marker is clicked infowindow pops up
   marker.addListener('click', function(){
@@ -116,6 +114,15 @@ function makeMarkerIcon(markerColor) {
 
 function myclick(instid) {
   google.maps.event.trigger(markers.get(instid), "click");
+}
+
+function populateSideBar(markers, side_html){
+  markers.forEach(function(marker, instname) {
+    side_html += '<li> \
+  <a href="javascript:myclick(' + marker.instid + ')">'+ marker.title+ '</a></li>'
+  });
+  console.log(side_html);
+  return side_html;
 }
 
 
