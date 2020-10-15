@@ -173,13 +173,16 @@ async function showHideEdges(instid) {
 
 function populateInfoWindow(map, marker, infowindow) {
   // Check to make sure the infowindow is not already opened on this marker.
-
+  /*
+   
+  */
   // Close the info window if marker is clicked twice 
   if (infowindow.marker == marker) {
     infowindow.close();
-  }
+    infowindow.marker = null;
+  } else {
   // If a different marker is clicked close current window and open new one 
-  if (infowindow.marker != marker) {
+ // if (infowindow.marker != marker) {
     infowindow.setContent(marker.title);
     infowindow.marker = marker;
     infowindow.open(map,marker);
