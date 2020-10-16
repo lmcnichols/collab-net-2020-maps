@@ -271,6 +271,7 @@ function populateInfoWindow(map, marker, infowindow) {
     infowindow.setContent(marker.title);
     infowindow.marker = marker;
     infowindow.open(map,marker);
+    console.log('test');
   } 
 }
 
