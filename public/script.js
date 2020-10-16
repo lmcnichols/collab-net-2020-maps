@@ -34,7 +34,7 @@ async function initMap() {
   publications = data["publications"];
 
   // Display the header on the side bar 
-  loadSideBar();
+  loadSideBar('');
 
   // first create markers and render them
   initMarkers();
@@ -240,16 +240,18 @@ async function getCollaborators(instid) {
 }
 
 function buildCollabHTML(obj) {
+  var collab_html = '';
   for (var author in obj) {
-    var collab_html = '<div class="collaborator"> \
-    <h3 class="collab-name">' + author + '</h3>'
+    collab_html += '<div class="collaborator"> \
+    <input type="checkbox" />' + author 
     var publications = obj[author];
     for (var pub in publications){
-      collab_html += '<input type="checkbox" />' + publications[pub] + '<br />'
+      collab_html += '<p>' + publications[pub] + '<br />'
     }
-    collab_html += '</div>'
+    collab_html += '</p></div>'
 }
-loadCollabHTML(collab_html);
+//loadCollabHTML(collab_html);
+loadSideBar(collab_html);
 }
 
 // Actually displays the collaborator info on the sidebar
@@ -258,9 +260,9 @@ function loadCollabHTML(collab_html){
 }
 
 // Loads the plain sideabar with heading 
-function loadSideBar(){
+function loadSideBar(html){
   document.getElementById("sidebar").innerHTML = 
-      '<h1>Academic Collaboration Network</h1>';
+      '<h1>Academic Collaboration Network</h1>' + html;
 }
 
 
