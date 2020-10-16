@@ -1,5 +1,8 @@
 "use strict";
 
+// Initialize the html code that will go on the side panel 
+var side_html = '';
+
 var map;
 const CURVATURE = 0.5;
 const CALPOLYLATLNG = {lat: 37, lng: -115.65};
@@ -32,6 +35,9 @@ async function initMap() {
   // first create markers and render them
   initMarkers();
   renderMarkers();
+
+  side_html = '<h1>Academic Collaboration Network</h1> \
+<h2>Institutions</h2>'
 }
 
 async function initData() {
@@ -46,16 +52,13 @@ async function initData() {
 
 function initMarkers() {
   // Initialize the info on the side bar 
-  var side_html = '';
  
   Object.values(institutions).forEach(function (inst) {
     var newMarker = addMarker(inst, side_html);
     markers.set(inst["id"], newMarker);
   })
-  side_html+='<h1>Academic Collaboration Network</h1> \
-  <h2>Institutions</h2>'+populateSideBar(markers, side_html);
-  document.getElementById("sidebar").innerHTML = side_html;
-}
+  
+
 
 function renderMarkers() {
     markers.forEach(function(marker, instname) {
@@ -85,6 +88,7 @@ function addMarker(inst, side_html){
   marker.addListener('click', function(){
       populateInfoWindow(map, marker, infowindow),
       showHideEdges(inst["id"]);
+      populateSideBar(marker);
   });
 
   // Two event listeners - one for mouseover, one for mouseout,
@@ -116,7 +120,7 @@ function myclick(instid) {
   google.maps.event.trigger(markers.get(instid), "click");
 }
 
-function populateSideBar(markers, side_html){
+function populateSideBar(marker){
   markers.forEach(function(marker, instname) {
     side_html += '<li> \
   <a href="javascript:myclick(' + marker.instid + ')">'+ marker.title+ '</a></li>'
