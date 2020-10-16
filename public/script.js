@@ -86,6 +86,7 @@ function addMarker(inst){
 
   // When marker is clicked infowindow pops up
   marker.addListener('click', function(){
+      setClicked(marker);
       populateInfoWindow(map, marker, infowindow),
       showHideEdges(inst["id"]);
       buildCollabHTML(marker);
@@ -101,6 +102,10 @@ function addMarker(inst){
     this.setIcon(defaultIcon);
   });
   return marker;
+}
+
+function setClicked(marker){
+  clickedMarker = marker;
 }
 
 // This function takes in a COLOR, and then creates a new marker
@@ -182,9 +187,9 @@ async function showHideEdges(instid) {
     await getEdges(instid);
   }
   var curMarker = markers.get(instid);
-  var lastMarker = clickedMarker;
-  // If another marker is clicked, hide the previous lines
-  if (curMarker != lastMarker && lastMarker != null) {
+  // If another marker has been clicked alreayd, 
+  // hide its lines on the map 
+  if (curMarker != clickedMarker && clickedMarker != null) {
     lastMarker.lines.forEach(function(line) {
       line.setMap(null);
     });
@@ -197,7 +202,6 @@ async function showHideEdges(instid) {
       line.setMap(null);
     }
   })
-  clickedMarker = curMarker;
 }
 
 
@@ -250,14 +254,21 @@ function buildCollabHTML(obj) {
     }
     collab_html += '</p></div>'
 }
-//loadCollabHTML(collab_html);
 loadSideBar(collab_html);
 }
 
-// Actually displays the collaborator info on the sidebar
-function loadCollabHTML(collab_html){
-  document.getElementsByClassName("checklist").innerHTML = collab_html;
+function showHideCollaboratorPanel(instid){
+  var curMarker = markers.get(instid);
+  var lastMarker = clickedMarker;
+  // If the marker is clicked twice, clear panel 
+  if (curMarker == lastMarker) {
+    loadSideBar('');
+  // Else, generate a new side panel for the new marker 
+  } else {
+    buildCollabHTML(instid);
+  }
 }
+
 
 // Loads the plain sideabar with heading 
 function loadSideBar(html){
