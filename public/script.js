@@ -237,8 +237,9 @@ function showCollaborators(obj) {
     <h3 class="collab-name">' + author + '</h3>'
 
     var publications = obj[author];
+    //console.log(publications);
     for (var pub in publications){
-      side_html += '<li class="pub">' + pub + '</li>'
+      side_html += '<li class="pub">' + publications[pub] + '</li>'
     }
     side_html += '</div>'
 }
@@ -271,7 +272,6 @@ function populateInfoWindow(map, marker, infowindow) {
     infowindow.setContent(marker.title);
     infowindow.marker = marker;
     infowindow.open(map,marker);
-    console.log('test');
   } 
 }
 
