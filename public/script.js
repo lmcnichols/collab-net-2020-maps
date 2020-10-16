@@ -1,7 +1,7 @@
 "use strict";
 
-// Initialize the info on the side bar 
-var side_html = '';
+// Keeps track of the marker that was most recently clicked 
+var clickedMarker;
 
 var map;
 const CURVATURE = 0.5;
@@ -34,7 +34,7 @@ async function initMap() {
   publications = data["publications"];
 
   // Display the header on the side bar 
-  populateSideBar('');
+  loadSideBar();
 
   // first create markers and render them
   initMarkers();
@@ -56,7 +56,7 @@ async function initData() {
 
 function initMarkers() {
   Object.values(institutions).forEach(function (inst) {
-    var newMarker = addMarker(inst, side_html);
+    var newMarker = addMarker(inst);
     markers.set(inst["id"], newMarker);
   })
 
@@ -88,7 +88,7 @@ function addMarker(inst){
   marker.addListener('click', function(){
       populateInfoWindow(map, marker, infowindow),
       showHideEdges(inst["id"]);
-      populateSideBar(marker);
+      buildCollabHTML(marker);
       getCollaborators(marker.instid);
   });
 
@@ -182,15 +182,24 @@ async function showHideEdges(instid) {
     await getEdges(instid);
   }
   var curMarker = markers.get(instid);
+  var lastMarker = clickedMarker;
+  // If another marker is clicked, hide the previous lines
+  if (curMarker != lastMarker && lastMarker != null) {
+    lastMarker.lines.forEach(function(line) {
+      line.setMap(null);
+    });
+  }
+  // If the marker was clicked twice, hide lines 
   curMarker.lines.forEach(function(line) {
     if (line.getMap() == null) {
-      console.log("map is null, setting now");
       line.setMap(map);
     } else {
       line.setMap(null);
     }
   })
+  clickedMarker = curMarker;
 }
+
 
 function highlightLine(line, path){
   line.setMap(null);
@@ -227,32 +236,31 @@ async function getCollaborators(instid) {
       return res.json();
     })
 
-  showCollaborators(obj);
+  buildCollabHTML(obj);
 }
 
-function showCollaborators(obj) {
-  var side_html = '';
+function buildCollabHTML(obj) {
   for (var author in obj) {
-    side_html += '<div class="collaborator"> \
+    var collab_html = '<div class="collaborator"> \
     <h3 class="collab-name">' + author + '</h3>'
-
     var publications = obj[author];
-    //console.log(publications);
     for (var pub in publications){
-      side_html += '<li class="pub">' + publications[pub] + '</li>'
+      collab_html += '<input type="checkbox" />' + publications[pub] + '<br />'
     }
-    side_html += '</div>'
+    collab_html += '</div>'
 }
-populateSideBar(side_html);
-  
+loadCollabHTML(collab_html);
 }
 
-// Adds the html code to the sidebar, making it show up
-function populateSideBar(side_html){
+// Actually displays the collaborator info on the sidebar
+function loadCollabHTML(collab_html){
+  document.getElementsByClassName("checklist").innerHTML = collab_html;
+}
 
+// Loads the plain sideabar with heading 
+function loadSideBar(){
   document.getElementById("sidebar").innerHTML = 
-      '<h1>Academic Collaboration Network</h1>' + side_html;
-
+      '<h1>Academic Collaboration Network</h1>';
 }
 
 

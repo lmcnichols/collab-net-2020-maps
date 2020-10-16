@@ -166,6 +166,7 @@ router.get('/getCollaborators', function(req, res) {
         var name = collaboratorData.get(authorId)["name"];
         collabMap[name] = publications;
     })
+
     res.json(collabMap);
     
 });
