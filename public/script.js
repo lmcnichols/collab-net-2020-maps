@@ -272,8 +272,9 @@ function showHideCollaboratorPanel(instid){
 
 // Loads the plain sideabar with heading 
 function loadSideBar(html){
-  document.getElementById("sidebar").innerHTML = 
-      '<h1>Academic Collaboration Network</h1>' + html;
+  /*document.getElementById("sidebar").innerHTML = 
+      '<h1>Academic Collaboration Network</h1>' + html;*/
+    document.getElementById("checklist").innerHTML = html;
 }
 
 
