@@ -151,4 +151,25 @@ router.get('/getEdges', function(req, res) {
     res.json(edgeMap);
 });
 
+
+router.get('/getCollaborators', function(req, res) {
+    const searchParams = url.parse(req.url, true).query;
+    const sourceid = parseInt(searchParams["instid"]);
+    const source = institutionData.get(sourceid);
+    var collabMap = {};
+
+    // getting all collaborators for each publication
+    source["collaborators"].forEach(function (authorId) {
+        // getting all publications for each collaborator
+        //publicationData.get(title)["authors"].forEach(function (authorId) {
+        var publications = collaboratorData.get(authorId)["publications"];
+        var name = collaboratorData.get(authorId)["name"];
+        collabMap[name] = publications;
+    })
+    res.json(collabMap);
+    
+});
+
+
+
 module.exports = router;

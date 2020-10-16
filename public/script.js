@@ -1,5 +1,8 @@
 "use strict";
 
+// Initialize the info on the side bar 
+var side_html = '';
+
 var map;
 const CURVATURE = 0.5;
 const CALPOLYLATLNG = {lat: 37, lng: -115.65};
@@ -13,6 +16,7 @@ var publications;
 var markers = new Map();
 var edges = new Map();
 
+/* ------------MAP------------*/
 
 async function initMap() {
   var options = {
@@ -29,9 +33,13 @@ async function initMap() {
   collaborators = data["collaborators"];
   publications = data["publications"];
 
+  // Display the header on the side bar 
+  populateSideBar('');
+
   // first create markers and render them
   initMarkers();
   renderMarkers();
+  
 }
 
 async function initData() {
@@ -44,17 +52,14 @@ async function initData() {
   }
 }
 
+/* ------------MARKERS------------*/
+
 function initMarkers() {
-  // Initialize the info on the side bar 
-  var side_html = '';
- 
   Object.values(institutions).forEach(function (inst) {
     var newMarker = addMarker(inst, side_html);
     markers.set(inst["id"], newMarker);
   })
-  side_html+='<h1>Academic Collaboration Network</h1> \
-  <h2>Institutions</h2>'+populateSideBar(markers, side_html);
-  document.getElementById("sidebar").innerHTML = side_html;
+
 }
 
 function renderMarkers() {
@@ -63,7 +68,7 @@ function renderMarkers() {
     });
 }
 
-function addMarker(inst, side_html){
+function addMarker(inst){
   const position = new google.maps.LatLng(inst["location"][0], inst["location"][1]);
   const defaultIcon = makeMarkerIcon('0091ff');
   // Create a "highlighted location" marker color for when the user
@@ -79,12 +84,12 @@ function addMarker(inst, side_html){
   });
   
 
-
-  
   // When marker is clicked infowindow pops up
   marker.addListener('click', function(){
       populateInfoWindow(map, marker, infowindow),
       showHideEdges(inst["id"]);
+      populateSideBar(marker);
+      getCollaborators(marker.instid);
   });
 
   // Two event listeners - one for mouseover, one for mouseout,
@@ -116,15 +121,9 @@ function myclick(instid) {
   google.maps.event.trigger(markers.get(instid), "click");
 }
 
-function populateSideBar(markers, side_html){
-  markers.forEach(function(marker, instname) {
-    side_html += '<li> \
-  <a href="javascript:myclick(' + marker.instid + ')">'+ marker.title+ '</a></li>'
-  });
-  console.log(side_html);
-  return side_html;
-}
 
+
+/* ------------EDGES------------*/
 
 async function getEdges(instid) {
   // build URL with search params
@@ -193,25 +192,6 @@ async function showHideEdges(instid) {
   })
 }
 
-function populateInfoWindow(map, marker, infowindow) {
-  // Check to make sure the infowindow is not already opened on this marker.
-  /*
-   
-  */
-  // Close the info window if marker is clicked twice 
-  if (infowindow.marker == marker) {
-    infowindow.close();
-    infowindow.marker = null;
-  } else {
-  // If a different marker is clicked close current window and open new one 
- // if (infowindow.marker != marker) {
-    infowindow.setContent(marker.title);
-    infowindow.marker = marker;
-    infowindow.open(map,marker);
-  } 
-}
-
-
 function highlightLine(line, path){
   line.setMap(null);
   var highlightedLine = new google.maps.Polyline({
@@ -229,4 +209,71 @@ function highlightLine(line, path){
         line.setMap(map);
     });
 }
+
+
+
+
+/* ------------SIDEBAR------------*/
+
+async function getCollaborators(instid) {
+  // build URL with search params
+  const url = new URL("http://localhost:3000/api/map/getCollaborators"),
+    params = {instid : instid}
+  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
+
+  // call fetch
+  var obj = await fetch(url).
+    then(function(res) {
+      return res.json();
+    })
+
+  showCollaborators(obj);
+}
+
+function showCollaborators(obj) {
+  var side_html = '';
+  for (var author in obj) {
+    side_html += '<div class="collaborator"> \
+    <h3 class="collab-name">' + author + '</h3>'
+
+    var publications = obj[author];
+    for (var pub in publications){
+      side_html += '<li class="pub">' + pub + '</li>'
+    }
+    side_html += '</div>'
+}
+populateSideBar(side_html);
+  
+}
+
+// Adds the html code to the sidebar, making it show up
+function populateSideBar(side_html){
+
+  document.getElementById("sidebar").innerHTML = 
+      '<h1>Academic Collaboration Network</h1>' + side_html;
+
+}
+
+
+
+
+/* ------------INFOWINDOW------------*/
+
+function populateInfoWindow(map, marker, infowindow) {
+  // Check to make sure the infowindow is not already opened on this marker.
+  // Close the info window if marker is clicked twice 
+  if (infowindow.marker == marker) {
+    infowindow.close();
+    infowindow.marker = null;
+  } else {
+  // If a different marker is clicked close current window and open new one 
+ // if (infowindow.marker != marker) {
+    infowindow.setContent(marker.title);
+    infowindow.marker = marker;
+    infowindow.open(map,marker);
+  } 
+}
+
+
+
 
