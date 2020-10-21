@@ -5,60 +5,57 @@ const CURVATURE = 0.5;
 const CALPOLYLATLNG = {lat: 35.3, lng: -120.65};
 const ZOOM = 6;
 
-var markers = [];
+var data;
+var institutions;
+var collaborators;
+var publications;
+var markers = new Map();
+var edges = new Map();
 
-function initMap() {
+async function initMap() {
   var options = {
     center: CALPOLYLATLNG,
     zoom: ZOOM,
     mapTypeControl: false
-
   };
-
   map = new google.maps.Map(document.getElementById('map'), options);
-  initData(() =>
-    createMarkers(() =>
-      renderMarkers()
-    )
-  );
+
+  // fetch data from the API
+  data = await initData();
+  institutions = data["institutions"];
+  collaborators = data["collaborators"];
+  publications = data["publications"];
+
+  // first create markers and render them
+  initMarkers();
+  renderMarkers();
 }
 
-function initData(_callback) {
+async function initData() {
   const url = new URL('http://localhost:3000/api/map/scrapeData');
-  fetch(url)
-    .then(function(response) {
-      console.log(response);
-    })
-    .then(function() {
-      _callback();
-    })
+  
+  var response = await fetch(url);
+
+  if (response.ok) {
+    return response.json();
+  }
 }
 
-function createMarkers(_callback) {
-  const url = new URL('http://localhost:3000/api/map/markerLocations');
-  fetch(url)
-    .then(function(data) {
-        return data.json();
-    }).then(function (institutions) {
-
-      for (var instname in institutions) {
-        var pos = new google.maps.LatLng(institutions[instname]["lat"], institutions[instname]["lng"]);
-        var newMarker = addMarker(pos, instname);
-        markers.push(newMarker);
-      }
-    
-    }).then(function() {
-      _callback();
-    });
+function initMarkers() {
+  Object.values(institutions).forEach(function (inst) {
+    var newMarker = addMarker(inst);
+    markers.set(inst["id"], newMarker);
+  })
 }
 
 function renderMarkers() {
-    markers.forEach(function(marker) {
+    markers.forEach(function(marker, instname) {
       marker.setMap(map);
     });
 }
 
-function addMarker(position, name){
+function addMarker(inst){
+  const position = new google.maps.LatLng(inst["location"][0], inst["location"][1]);
   const defaultIcon = makeMarkerIcon('0091ff');
   // Create a "highlighted location" marker color for when the user
   // mouses over the marker.
@@ -67,14 +64,16 @@ function addMarker(position, name){
   const marker = new google.maps.Marker({
       position: position,
       icon: defaultIcon,
-      title: name
+      title: inst["name"],
+      instid: inst["id"]
   });
     
   var infowindow = new google.maps.InfoWindow();
   // When marker is clicked infowindow pops up
-  google.maps.event.addListener(marker, 'click', function(){
+  marker.addListener('click', function(){
       populateInfoWindow(map, marker, infowindow)
   });
+
   // Two event listeners - one for mouseover, one for mouseout,
   // to change the colors back and forth.
   marker.addListener('mouseover', function() {
@@ -82,6 +81,11 @@ function addMarker(position, name){
   });
   marker.addListener('mouseout', function() {
     this.setIcon(defaultIcon);
+  });
+
+  // add listener to show or hide edges when current marker is clicked
+  marker.addListener('click', function() {
+    showHideEdges(inst["id"]);
   });
 
   return marker;
@@ -112,6 +116,103 @@ function populateInfoWindow(map, marker, infowindow) {
     });
     infowindow.open(map, marker);
   }
-} 
+}
 
+async function getEdges(instid) {
+  // build URL with search params
+  const url = new URL("http://localhost:3000/api/map/getEdges"),
+    params = {instid : instid}
+  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
 
+  // call fetch
+  var obj = await fetch(url).
+    then(function(res) {
+      return res.json();
+    })
+
+  buildEdges(instid, obj);
+}
+
+function buildEdges(sourceid, obj) {
+  var edgeMap = new Map();
+  var curMarker = markers.get(sourceid);
+  var pos1 = curMarker.getPosition();
+
+  Object.keys(obj).forEach(function(instidstr) {
+    var instid = parseInt(instidstr);
+    var curveMarker = new google.maps.Marker({
+      position: pos1,
+      clickable: false,
+      zIndex: 0 // behind the other markers
+    });
+    var pos2 = markers.get(instid).getPosition();
+    calculateCurve(pos1, pos2, curveMarker);
+
+    // update the edgeMap
+    edgeMap.set(instid, curveMarker);
+
+    // add listeners to the curvemarker to re-draw the projection
+    // if the dimensions of the map changes
+    map.addListener('projection_changed', function() {
+      calculateCurve(pos1, pos2, curveMarker);
+    });
+    map.addListener('zoom_changed', function() {
+      calculateCurve(pos1, pos2, curveMarker);
+    });
+  });
+
+  // add current inst's edgeMap to the edges map
+  edges.set(sourceid, edgeMap)
+}
+
+// pass in marker.getPosition()
+function calculateCurve(pos1, pos2, curveMarker) {
+  var projection = map.getProjection(),
+  p1 = projection.fromLatLngToPoint(pos1), // xy
+  p2 = projection.fromLatLngToPoint(pos2);
+
+  // Calculate the arc.
+  // To simplify the math, these points 
+  // are all relative to p1:
+  var e = new google.maps.Point(p2.x - p1.x, p2.y - p1.y), // endpoint (p2 relative to p1)
+      m = new google.maps.Point(e.x / 2, e.y / 2), // midpoint
+      o = new google.maps.Point(e.y, -e.x), // orthogonal
+      c = new google.maps.Point( // curve control point
+        m.x + CURVATURE * o.x,
+        m.y + CURVATURE * o.y);
+
+  var pathDef = 'M 0,0 ' +
+    'q ' + c.x + ',' + c.y + ' ' + e.x + ',' + e.y;
+
+  var zoom = map.getZoom(),
+    scale = 1 / (Math.pow(2, -zoom));
+
+  var symbol = {
+    path: pathDef,
+    scale: scale,
+    strokeWeight: 2,
+    fillColor: 'none'
+  };
+
+  curveMarker.setOptions({
+      position: pos1,
+      icon: symbol,
+  });
+}
+
+async function showHideEdges(instid) {
+  // if the marker doesn't have its edges yet, get them
+  if (!edges.has(instid)) {
+    await getEdges(instid);
+  }
+
+  var edgeMap = edges.get(instid);
+  edgeMap.forEach(function (curveMarker, toInst) {
+    if (curveMarker.getMap() == null) {
+      console.log("map is null, setting now");
+      curveMarker.setMap(map);
+    } else {
+      curveMarker.setMap(null);
+    }
+  })
+}

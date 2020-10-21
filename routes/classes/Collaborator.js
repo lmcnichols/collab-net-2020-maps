@@ -3,12 +3,11 @@
 // class representing a collaborator
 
 class Collaborator {
-    constructor(name, scopusid, publications, instname) {
+    constructor(name, scopusid, publications, instid) {
         this.name = name;
         this.scopusid = scopusid;
         this.publications = publications;
-        //this.friends = {};
-        this.instname = instname;
+        this.instid = instid;
     }
 }
 

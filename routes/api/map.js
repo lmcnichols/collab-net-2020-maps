@@ -2,6 +2,7 @@
 
 // import nodejs dependencies
 const express = require('express');
+const url = require('url');
 const router = express.Router();
 const fs = require('fs');
 const { performance } = require('perf_hooks');
@@ -19,16 +20,17 @@ var Publication = require('../classes/Publication');
 
 /* ================================================== */
 const GRAPH_FILE = 'outGraph.json';
-//var data = {};
 var institutionData = new Map();
 var collaboratorData = new Map();
 var publicationData = new Map();
+var EDGES = new Map();
 /* ================================================== */
 
 /* Populate global data objects */
 router.get('/scrapeData', function(req, res) {
     var t1 = performance.now();
     var count = 0;
+    var tempMap = new Map();
 
     var obj = fs.readFileSync(GRAPH_FILE, 'utf-8', function(err, fileContents) {
         if (err) throw err;
@@ -55,18 +57,19 @@ router.get('/scrapeData', function(req, res) {
 
         // make new institution object or add to existing institution object
         // update dictionary with "instname" : new inst object
-        if (institutionData.has(instname)) {
-            var inst = institutionData.get(instname);
+        if (tempMap.has(instname)) {
+            var inst = institutionData.get(tempMap.get(instname));
             inst.addPublications(publications);
-            inst.addCollaborator(name);
+            inst.addCollaborator(scopusid);
         } else {
-            var newInst = new Institution(instname, count, location, publications, name);
-            institutionData.set(instname, newInst);
+            var newInst = new Institution(instname, count, location, publications, scopusid);
+            tempMap.set(instname, count);
+            institutionData.set(count, newInst);
             count++;
         }
 
         // make new collaborator object
-        var newCollab = new Collaborator(name, scopusid, publications, instname)
+        var newCollab = new Collaborator(name, scopusid, publications, tempMap.get(instname))
         collaboratorData.set(scopusid, newCollab);
     });
 
@@ -82,29 +85,31 @@ router.get('/scrapeData', function(req, res) {
         });
     });
 
-
-
     /* These local objects are only for testing, we send them as
        JSON response to check formatting */
 
-    /*var localInstMap = {};
+    var localInstMap = {};
     institutionData.forEach(function (value, key) {
         localInstMap[key] = value;
     })
-    res.json(localInstMap)*/
 
-    /*var localColMap = {};
+    var localColMap = {};
     collaboratorData.forEach(function (value, key) {
         localColMap[key] = value;
     })
-    res.json(localColMap)*/
 
-    /*var localPubMap = {};
+    var localPubMap = {};
     publicationData.forEach(function (value, key) {
         localPubMap[key] = value;
     })
-    res.json(localPubMap)*/
-    res.sendStatus(200)
+
+    var data = {
+        "institutions" : localInstMap,
+        "collaborators" : localColMap,
+        "publications" : localPubMap
+    };
+
+    res.send(data);
 
     var t2 = performance.now();
     console.log(`This took ${(t2 - t1) / 1000} seconds`);
@@ -117,18 +122,33 @@ function cleanPublications(pubs) {
     }
 }
 
-/* Get all marker locations */
-router.get('/markerLocations', function(req, res) {
-    var institutions = {};
+router.get('/getEdges', function(req, res) {
+    const searchParams = url.parse(req.url, true).query;
+    const sourceid = parseInt(searchParams["instid"]);
+    const source = institutionData.get(sourceid);
+    var edgeMap = {};
 
-    institutionData.forEach(function(instobject, instname) {
-        institutions[instname] = {
-            "lat" : instobject.location[0],
-            "lng" : instobject.location[1]
-        };
-    });
+    // getting all collaborating institutions for each publication
+    source["publications"].forEach(function (title) {
+        // getting all authors for the current title
+        publicationData.get(title)["authors"].forEach(function (authorId) {
+            var colInst = collaboratorData.get(authorId)["instid"];
 
-    res.send(institutions);
-})
+            // if the collaborating inst is not the current inst AND
+            // if the current inst's edgeMap does not contain an edge to
+            // the collaborating inst add it
+            if (colInst != sourceid) {
+                // if we've already seen this institution, add author to collabs
+                if (edgeMap.hasOwnProperty(colInst)) {
+                    edgeMap[colInst].push(authorId);
+                } else {
+                    edgeMap[colInst] = [authorId];
+                }
+            }
+        })
+    })
+
+    res.json(edgeMap);
+});
 
 module.exports = router;
