@@ -1,23 +1,21 @@
-
-.container {
+.mapcontainer {
   height: 100%;
-  position: relative;
+  position: fixed;
 }
 
 #map {
-  margin: 0;
-  padding: 0;
   height: 800px;
   width: 1000px;
-  float: left;
-  position: absolute;
+
 }
 
 #sidebar {
  width: 200px;
- height: 600px;
  float: right;
- 
+ overflow-x: scroll;
+ top:0;
+ bottom: 0;
+ height: 800px;
 }
 
 h2 {

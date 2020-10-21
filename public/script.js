@@ -88,9 +88,9 @@ function addMarker(inst){
   marker.addListener('click', function(){
       setClicked(marker);
       populateInfoWindow(map, marker, infowindow),
-      showHideEdges(inst["id"]);
-      buildCollabHTML(marker);
+      showHideEdges(marker.instid);
       getCollaborators(marker.instid);
+      buildCollabHTML(marker);
   });
 
   // Two event listeners - one for mouseover, one for mouseout,
@@ -259,10 +259,10 @@ loadSideBar(collab_html);
 
 function showHideCollaboratorPanel(instid){
   var curMarker = markers.get(instid);
-  var lastMarker = clickedMarker;
   // If the marker is clicked twice, clear panel 
-  if (curMarker == lastMarker) {
+  if (curMarker == clickedMarker) {
     loadSideBar('');
+    console.log("two clicks")
   // Else, generate a new side panel for the new marker 
   } else {
     buildCollabHTML(instid);
@@ -275,6 +275,7 @@ function loadSideBar(html){
   /*document.getElementById("sidebar").innerHTML = 
       '<h1>Academic Collaboration Network</h1>' + html;*/
     document.getElementById("checklist").innerHTML = html;
+    //console.log(document.getElementById("checklist").innerHTML);
 }
 
 
