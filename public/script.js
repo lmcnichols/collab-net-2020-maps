@@ -43,7 +43,7 @@ async function initMap() {
 }
 
 async function initData() {
-  const url = new URL('http://localhost:3000/api/map/scrapeData');
+  const url = new URL('http://localhost:3000/api/data/scrapeData');
   
   var response = await fetch(url);
 
@@ -132,7 +132,7 @@ function myclick(instid) {
 
 async function getEdges(instid) {
   // build URL with search params
-  const url = new URL("http://localhost:3000/api/map/getEdges"),
+  const url = new URL("http://localhost:3000/api/edges/getEdges"),
     params = {instid : instid}
   Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
 

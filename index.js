@@ -10,7 +10,8 @@ const app = express();
 app.use(cors())
 
 /* Use express router */
-app.use('/api/map', require('./routes/api/map'));
+app.use('/api/data', require('./routes/api/data'));
+app.use('/api/edges', require('./routes/api/edges'));
 
 /* Setting a static folder. This doesnt really do anything for single
    page web apps but automatically routes the html */

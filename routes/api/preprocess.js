@@ -1,9 +1,5 @@
-"use strict";
+"use strict"
 
-// import nodejs dependencies
-const express = require('express');
-const url = require('url');
-const router = express.Router();
 const fs = require('fs');
 const { performance } = require('perf_hooks');
 
@@ -26,8 +22,7 @@ var publicationData = new Map();
 var EDGES = new Map();
 /* ================================================== */
 
-/* Populate global data objects */
-router.get('/scrapeData', function(req, res) {
+function scrapeData() {
     var t1 = performance.now();
     var count = 0;
     var tempMap = new Map();
@@ -44,7 +39,7 @@ router.get('/scrapeData', function(req, res) {
 
         // scrape institution information
         var instname = collaborator["properties"]["personalInfo"]["attributes"]["AffName"];
-        if (instname === null){
+        if (instname === null) {
             instname = "Unknown Institution";
         } else {
             instname = instname.trim();
@@ -85,35 +80,9 @@ router.get('/scrapeData', function(req, res) {
         });
     });
 
-    /* These local objects are only for testing, we send them as
-       JSON response to check formatting */
-
-    var localInstMap = {};
-    institutionData.forEach(function (value, key) {
-        localInstMap[key] = value;
-    })
-
-    var localColMap = {};
-    collaboratorData.forEach(function (value, key) {
-        localColMap[key] = value;
-    })
-
-    var localPubMap = {};
-    publicationData.forEach(function (value, key) {
-        localPubMap[key] = value;
-    })
-
-    var data = {
-        "institutions" : localInstMap,
-        "collaborators" : localColMap,
-        "publications" : localPubMap
-    };
-
-    res.send(data);
-
     var t2 = performance.now();
     console.log(`This took ${(t2 - t1) / 1000} seconds`);
-})
+}
 
 // Cleanup publications array scraped from file
 function cleanPublications(pubs) {
@@ -122,55 +91,9 @@ function cleanPublications(pubs) {
     }
 }
 
-router.get('/getEdges', function(req, res) {
-    const searchParams = url.parse(req.url, true).query;
-    const sourceid = parseInt(searchParams["instid"]);
-    const source = institutionData.get(sourceid);
-    var edgeMap = {};
-
-    // getting all collaborating institutions for each publication
-    source["publications"].forEach(function (title) {
-        // getting all authors for the current title
-        publicationData.get(title)["authors"].forEach(function (authorId) {
-            var colInst = collaboratorData.get(authorId)["instid"];
-
-            // if the collaborating inst is not the current inst AND
-            // if the current inst's edgeMap does not contain an edge to
-            // the collaborating inst add it
-            if (colInst != sourceid) {
-                // if we've already seen this institution, add author to collabs
-                if (edgeMap.hasOwnProperty(colInst)) {
-                    edgeMap[colInst].push(authorId);
-                } else {
-                    edgeMap[colInst] = [authorId];
-                }
-            }
-        })
-    })
-
-    res.json(edgeMap);
-});
-
-
-router.get('/getCollaborators', function(req, res) {
-    const searchParams = url.parse(req.url, true).query;
-    const sourceid = parseInt(searchParams["instid"]);
-    const source = institutionData.get(sourceid);
-    var collabMap = {};
-
-    // getting all collaborators for each publication
-    source["collaborators"].forEach(function (authorId) {
-        // getting all publications for each collaborator
-        //publicationData.get(title)["authors"].forEach(function (authorId) {
-        var publications = collaboratorData.get(authorId)["publications"];
-        var name = collaboratorData.get(authorId)["name"];
-        collabMap[name] = publications;
-    })
-
-    res.json(collabMap);
-    
-});
-
-
-
-module.exports = router;
+module.exports = {
+    scrapeData : scrapeData,
+    institutionData : institutionData,
+    collaboratorData : collaboratorData,
+    publicationData : publicationData
+}
