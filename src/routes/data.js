@@ -6,7 +6,7 @@ const url = require('url');
 const router = express.Router();
 
 // import data objects
-var preprocess = require('./preprocess');
+var preprocess = require('../libs/modules/preprocess');
 var institutionData = preprocess.institutionData;
 var collaboratorData = preprocess.collaboratorData;
 var publicationData = preprocess.publicationData;
