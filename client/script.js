@@ -1,7 +1,7 @@
 "use strict";
 
 // Keeps track of the marker that was most recently clicked 
-var clickedMarker;
+var clickedMarker = null;
 
 var map;
 const CURVATURE = 0.5;
@@ -86,11 +86,11 @@ function addMarker(inst){
 
   // When marker is clicked infowindow pops up
   marker.addListener('click', function(){
-      setClicked(marker);
-      populateInfoWindow(map, marker, infowindow),
+      showHideInfoWindow(map, marker, infowindow),
       showHideEdges(marker.instid);
       getCollaborators(marker.instid);
       buildCollabHTML(marker);
+      // Store this marker as the most recently clicked marker 
   });
 
   // Two event listeners - one for mouseover, one for mouseout,
@@ -104,9 +104,7 @@ function addMarker(inst){
   return marker;
 }
 
-function setClicked(marker){
-  clickedMarker = marker;
-}
+
 
 // This function takes in a COLOR, and then creates a new marker
 // icon of that color. The icon will be 21 px wide by 34 high, have an origin
@@ -190,8 +188,13 @@ async function showHideEdges(instid) {
   var curMarker = markers.get(instid);
   // If another marker has been clicked alreayd, 
   // hide its lines on the map 
+  console.log(curMarker.title);
+  if (clickedMarker!=null){
+    console.log(clickedMarker.title);
+  }
+  
   if (curMarker != clickedMarker && clickedMarker != null) {
-    lastMarker.lines.forEach(function(line) {
+    clickedMarker.lines.forEach(function(line) {
       line.setMap(null);
     });
   }
@@ -203,6 +206,7 @@ async function showHideEdges(instid) {
       line.setMap(null);
     }
   })
+  clickedMarker = curMarker;
 }
 
 // Not being used 
@@ -284,7 +288,7 @@ function loadSideBar(html){
 
 /* ------------INFOWINDOW------------*/
 
-function populateInfoWindow(map, marker, infowindow) {
+function showHideInfoWindow(map, marker, infowindow) {
   // Check to make sure the infowindow is not already opened on this marker.
   // Close the info window if marker is clicked twice 
   if (infowindow.marker == marker) {
@@ -292,7 +296,6 @@ function populateInfoWindow(map, marker, infowindow) {
     infowindow.marker = null;
   } else {
   // If a different marker is clicked close current window and open new one 
- // if (infowindow.marker != marker) {
     infowindow.setContent(marker.title);
     infowindow.marker = marker;
     infowindow.open(map,marker);
