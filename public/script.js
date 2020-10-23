@@ -174,10 +174,11 @@ function drawCurve(curMarker, marker2){
         strokeWeight: 1
   });
   curMarker.lines.push(line); 
-  google.maps.event.addListener(line, 'mouseover', function() {
+  // This code would cause the line to highlight when moused over 
+ /* google.maps.event.addListener(line, 'mouseover', function() {
     console.log("mouseover");
      highlightLine(line, path);
-});
+}); */
 }
 
 
@@ -204,7 +205,7 @@ async function showHideEdges(instid) {
   })
 }
 
-
+// Not being used 
 function highlightLine(line, path){
   line.setMap(null);
   var highlightedLine = new google.maps.Polyline({
@@ -274,7 +275,7 @@ function showHideCollaboratorPanel(instid){
 function loadSideBar(html){
   /*document.getElementById("sidebar").innerHTML = 
       '<h1>Academic Collaboration Network</h1>' + html;*/
-    document.getElementById("checklist").innerHTML = html;
+    document.getElementById("accordian").innerHTML = html;
     //console.log(document.getElementById("checklist").innerHTML);
 }
 
