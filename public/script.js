@@ -16,6 +16,7 @@ var publications;
 var markers = new Map();
 var edges = new Map();
 
+
 /* ------------MAP------------*/
 
 async function initMap() {
@@ -27,14 +28,14 @@ async function initMap() {
   map = new google.maps.Map(document.getElementById('map'), options);
   infowindow = new google.maps.InfoWindow();
 
+
   // fetch data from the API
   data = await initData();
   institutions = data["institutions"];
   collaborators = data["collaborators"];
   publications = data["publications"];
 
-  // Display the header on the side bar 
-  loadSideBar('');
+
 
   // first create markers and render them
   initMarkers();
@@ -80,7 +81,8 @@ function addMarker(inst){
       icon: defaultIcon,
       title: inst["name"],
       instid: inst["id"],
-      lines: []
+      lines: [],
+      collabhtml: ''
   });
   
 
@@ -88,8 +90,9 @@ function addMarker(inst){
   marker.addListener('click', function(){
       showHideInfoWindow(map, marker, infowindow),
       showHideEdges(marker.instid);
-      getCollaborators(marker.instid);
-      buildCollabHTML(marker);
+      showHideCollaboratorPanel(marker.instid);
+     // getCollaborators(marker.instid);
+     // buildCollabHTML(marker);
       // Store this marker as the most recently clicked marker 
   });
 
@@ -145,7 +148,6 @@ async function getEdges(instid) {
 
 function buildEdges(sourceid, obj) {
 
-  //var edgeMap = new Map();
   var curMarker = markers.get(sourceid);
 
   Object.keys(obj).forEach(function(instidstr) {
@@ -153,9 +155,6 @@ function buildEdges(sourceid, obj) {
     var marker2 = markers.get(instid)
 
     drawCurve(curMarker, marker2);
-
-    // edgeMap maps the instid to a marker that contains a list of edges 
-   // edgeMap.set(instid, curMarker);
 
     edges.set(sourceid, curMarker)
   });
@@ -186,13 +185,9 @@ async function showHideEdges(instid) {
     await getEdges(instid);
   }
   var curMarker = markers.get(instid);
-  // If another marker has been clicked alreayd, 
+
+  // If a previous marker was already clicked, 
   // hide its lines on the map 
-  console.log(curMarker.title);
-  if (clickedMarker!=null){
-    console.log(clickedMarker.title);
-  }
-  
   if (curMarker != clickedMarker && clickedMarker != null) {
     clickedMarker.lines.forEach(function(line) {
       line.setMap(null);
@@ -206,6 +201,8 @@ async function showHideEdges(instid) {
       line.setMap(null);
     }
   })
+
+  // Set this marker to be the most recently clicked marker 
   clickedMarker = curMarker;
 }
 
@@ -245,10 +242,14 @@ async function getCollaborators(instid) {
       return res.json();
     })
 
-  buildCollabHTML(obj);
+  buildCollabHTML(instid, obj);
 }
 
-function buildCollabHTML(obj) {
+function buildCollabHTML(instid, obj) {
+  var curMarker = markers.get(instid);
+  // Traverse each author in the json object and author name
+  // and publications to the html code
+  // associated with the school 
   var collab_html = '';
   for (var author in obj) {
     collab_html += '<div class="collaborator"> \
@@ -258,19 +259,23 @@ function buildCollabHTML(obj) {
       collab_html += '<p>' + publications[pub] + '<br />'
     }
     collab_html += '</p></div>'
-}
-loadSideBar(collab_html);
+  }
+  // Set the marker's html property to the html just built 
+  curMarker.collabhtml = collab_html;
 }
 
-function showHideCollaboratorPanel(instid){
+async function showHideCollaboratorPanel(instid){
   var curMarker = markers.get(instid);
-  // If the marker is clicked twice, clear panel 
+  // If the marker doesn't have collaborator html yet, get it 
+  if (curMarker.html == ''){
+    await getCollaborators(instid);
+  }
+  // If the marker is clicked twice, load a blank side panel
   if (curMarker == clickedMarker) {
     loadSideBar('');
-    console.log("two clicks")
-  // Else, generate a new side panel for the new marker 
+  // Else, generate a new information on this marker's side panel
   } else {
-    buildCollabHTML(instid);
+    loadSideBar(curMarker.collabhtml);
   }
 }
 

@@ -1,12 +1,24 @@
-.mapcontainer {
-  height: 100%;
-  position: fixed;
+header {
+  width: calc(100vw);
+  height: 50px;
+  padding: 15px 0 20px 20px;
+  font-size: 30px;
+  line-height: 30px;
+  font-weight: bold;
+  color: white;
+  background-color: #007faa;
+}
+
+header span {
+  vertical-align: middle;
 }
 
 #map {
-  height: 800px;
-  width: 1000px;
-
+  position: absolute;
+  top: 65px;
+  left: 350px;
+  width: calc(100vw - 350px);
+  height: calc(100vh - 65px);
 }
 
 #sidebar {
@@ -27,5 +39,30 @@ h2 {
   width:300px; 
   height: 100px; 
   overflow-y: scroll;
+}
+
+.searchPanel {
+  position: relative;
+  width: 350px;
+}
+
+.searchPanel div {
+  padding: 20px;
+}
+
+.searchPanel input {
+  width: calc(100% - 50px);
+  font-size: 16px;
+  border: 0;
+  border-bottom: 1px solid #ccc;
+}
+
+#listPanel {
+  position: absolute;
+  top: 135px;
+  left: 0px;
+  width: 350px;
+  height: calc(100vh - 135px);
+  overflow-y: auto;
 }
 
