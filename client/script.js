@@ -305,18 +305,17 @@ function buildCollabHTML(instid, obj) {
     }
     collab_html += '</p></div>'
   }*/
-  var id = 0;
+
   for (var author in obj) {
-    id++;
     collab_html += '<div class="card"> \
-    <div class="card-header" id="heading"'+id+'> \
+    <div class="card-header" id="headingOne"> \
       <h5 class="mb-0"> \
-      <button class="btn btn-link" data-toggle="collapse" data-target="#collapse"'+id+ '\
-      aria-expanded="true" aria-controls="collapse"'+id+'>' + author +
+      <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" \
+      aria-expanded="true" aria-controls="collapseOne">' + author +
       ' </button> \
       </h5> \
     </div> \
-    <div class="collapse show" aria-labelledby="heading"'+id+ 'data-parent="#accordion"> \
+    <div class="collapse show" aria-labelledby="headingOne" data-parent="#accordion"> \
       <div class="card-body"></div>';
   var publications = obj[author];
   for (var pub in publications){
