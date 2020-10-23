@@ -295,7 +295,7 @@ function buildCollabHTML(instid, obj) {
   // Traverse each author in the json object and author name
   // and publications to the html code
   // associated with the school 
-  var collab_html = '';
+  var collab_html= '<h2>'+curMarker.title+'</h2> <div id= "sidebar">';
  /* for (var author in obj) {
     collab_html += '<div class="collaborator"> \
     <input type="checkbox" />' + author 
@@ -307,23 +307,16 @@ function buildCollabHTML(instid, obj) {
   }*/
 
   for (var author in obj) {
-    collab_html += '<div class="card"> \
-    <div class="card-header" id="headingOne"> \
-      <h5 class="mb-0"> \
-      <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" \
-      aria-expanded="true" aria-controls="collapseOne">' + author +
-      ' </button> \
-      </h5> \
-    </div> \
-    <div class="collapse show" aria-labelledby="headingOne" data-parent="#accordion"> \
-      <div class="card-body"></div>';
+    collab_html += ' \
+    <button type="button" class="collapsible">' 
+    + author +
+    ' </button> \
+    <div class="content">'
   var publications = obj[author];
   for (var pub in publications){
     collab_html += '<p>' + publications[pub] + '<br />'
   }
-  collab_html += '</p> </div> \
-  </div> \
-</div>' 
+  collab_html += '</p> </div> <div>' 
       
   }
   // Set the marker's html property to the html just built 
@@ -347,14 +340,23 @@ async function showHideCollaboratorPanel(instid, clickStatus){
 }
 
 
-// Loads the plain sideabar with heading 
 function loadSideBar(html){
-  /*document.getElementById("sidebar").innerHTML = 
-      '<h1>Academic Collaboration Network</h1>' + html;*/
-    document.getElementById("accordian").innerHTML = html;
+    document.getElementById("sidepanel").innerHTML = html;
     sidehtml = html;
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
 
-    //console.log(document.getElementById("checklist").innerHTML);
+    for (i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") {
+          content.style.display = "none";
+        } else {
+          content.style.display = "block";
+        }
+      });
+    }   
 }
 
 
