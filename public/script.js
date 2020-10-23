@@ -16,6 +16,8 @@ var publications;
 var markers = new Map();
 var edges = new Map();
 
+var sidehtml = '';
+
 
 /* ------------MAP------------*/
 
@@ -23,6 +25,7 @@ async function initMap() {
   var options = {
     center: CALPOLYLATLNG,
     zoom: ZOOM,
+    minZoom: 1,
     mapTypeControl: false
   };
   map = new google.maps.Map(document.getElementById('map'), options);
@@ -201,9 +204,10 @@ async function showHideEdges(instid) {
       line.setMap(null);
     }
   })
-
-  // Set this marker to be the most recently clicked marker 
+  console.log("setting clicked")
   clickedMarker = curMarker;
+  // Set this marker to be the most recently clicked marker 
+  
 }
 
 // Not being used 
@@ -267,15 +271,19 @@ function buildCollabHTML(instid, obj) {
 async function showHideCollaboratorPanel(instid){
   var curMarker = markers.get(instid);
   // If the marker doesn't have collaborator html yet, get it 
-  if (curMarker.html == ''){
+  if (curMarker.collabhtml == ''){
+    console.log("awaiting"+curMarker.title);
     await getCollaborators(instid);
   }
+  console.log("awaited"+curMarker.title);
   // If the marker is clicked twice, load a blank side panel
-  if (curMarker == clickedMarker) {
+  if (sidehtml == curMarker.collabhtml) {
+    console.log("clearing side bar"+curMarker.title)
     loadSideBar('');
   // Else, generate a new information on this marker's side panel
   } else {
     loadSideBar(curMarker.collabhtml);
+    console.log("loading side bar"+curMarker.title)
   }
 }
 
@@ -285,6 +293,8 @@ function loadSideBar(html){
   /*document.getElementById("sidebar").innerHTML = 
       '<h1>Academic Collaboration Network</h1>' + html;*/
     document.getElementById("accordian").innerHTML = html;
+    sidehtml = html;
+    console.log("setting sidehtml")
     //console.log(document.getElementById("checklist").innerHTML);
 }
 
