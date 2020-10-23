@@ -6,7 +6,7 @@ header {
   line-height: 30px;
   font-weight: bold;
   color: white;
-  background-color: #007faa;
+  background-color: #d4af37;
 }
 
 header span {
@@ -23,25 +23,33 @@ header span {
 
 
 h2 {
-  color: darkgrey;
+  font-size: 30px;
+  line-height: 30px;
+  font-weight: bold;
+  color: black;
+  vertical-align: text-top;
+  font-weight: bold;
+
 }
 
-.checklist {
-  border:2px solid #ccc; 
-  width:300px; 
-  height: 100px; 
-  overflow-y: scroll;
+#sidepanel {
+  position: absolute;
+  top: 65px;
+  left: 15px;
+  width: 300px;
+  height: calc(100vh - 135px);
 }
 
 
 #sidebar {
   position: absolute;
-  top: 135px;
+  top: 100px;
   left: 15px;
   width: 300px;
   height: calc(100vh - 135px);
   overflow-y: auto;
 }
+
 
 .content {
   padding: 0 18px;
@@ -51,7 +59,7 @@ h2 {
 }
 
 .active, .collapsible:hover {
-  background-color: #ccc;
+  background-color: rgb(92, 151, 95);
 }
 
 .collapsible {
@@ -64,6 +72,18 @@ h2 {
   text-align: left;
   outline: none;
   font-size: 15px;
+}
+
+.collapsible:after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: white;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2796"; /* Unicode character for "minus" sign (-) */
 }
 
 
