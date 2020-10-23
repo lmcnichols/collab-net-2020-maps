@@ -1,7 +1,7 @@
 "use strict";
 
 // Keeps track of the marker that was most recently clicked 
-var clickedMarker = null;
+var lastClickedMarker = null;
 
 var map;
 const CURVATURE = 0.5;
@@ -91,9 +91,11 @@ function addMarker(inst){
 
   // When marker is clicked infowindow pops up
   marker.addListener('click', function(){
-      showHideInfoWindow(map, marker, infowindow),
-      showHideEdges(marker.instid);
-      showHideCollaboratorPanel(marker.instid);
+      var clickStatus = determineClickStatus(marker);
+      showHideInfoWindow(map, marker, infowindow, clickStatus);
+      showHideEdges(marker.instid, clickStatus);
+      showHideCollaboratorPanel(marker.instid, clickStatus);
+      lastClickedMarker = marker;
      // getCollaborators(marker.instid);
      // buildCollabHTML(marker);
       // Store this marker as the most recently clicked marker 
@@ -108,6 +110,28 @@ function addMarker(inst){
     this.setIcon(defaultIcon);
   });
   return marker;
+}
+
+function determineClickStatus(marker){
+  // If last clicked is null, this is the first click
+  if (lastClickedMarker == null) {
+   // lastClickedMarker = marker;
+   // console.log('firstlick');
+    return 'firstclick'
+  // If last clicked equals current marker, it has been 
+  // double clicked
+  } else if (marker == lastClickedMarker) {
+   // lastClickedMarker = marker;
+   // console.log('doubleclick');
+    return 'doubleclick'
+  // If marker and last clicked are different, 
+  // a new marker has been clicked 
+  } else {
+   // lastClickedMarker = marker;
+   // console.log('newclick');
+    return 'newclick'
+  }
+  
 }
 
 
@@ -174,7 +198,7 @@ function drawCurve(curMarker, marker2){
         strokeWeight: 1
   });
   curMarker.lines.push(line); 
-  // This code would cause the line to highlight when moused over 
+  // This code would highlight the line when moused over 
  /* google.maps.event.addListener(line, 'mouseover', function() {
     console.log("mouseover");
      highlightLine(line, path);
@@ -182,30 +206,47 @@ function drawCurve(curMarker, marker2){
 }
 
 
-async function showHideEdges(instid) {
+async function showHideEdges(instid, clickStatus) {
   // if the marker doesn't have its edges yet, get them
   if (!edges.has(instid)) {
     await getEdges(instid);
   }
   var curMarker = markers.get(instid);
 
-  // If a previous marker was already clicked, 
-  // hide its lines on the map 
-  if (curMarker != clickedMarker && clickedMarker != null) {
-    clickedMarker.lines.forEach(function(line) {
+  // On new click hide the edges from the previous marker 
+  // and show new edges 
+  if (clickStatus === 'newclick') {
+    console.log('newclick');
+    console.log(lastClickedMarker.lines);
+    lastClickedMarker.lines.forEach(function(line) {
+      console.log("setting null")
       line.setMap(null);
+    })
+    curMarker.lines.forEach(function(line) {
+      line.setMap(map);
+    });
+  // Hide edges on double click 
+  } else if (clickStatus === 'doubleclick') { 
+    curMarker.lines.forEach(function(line) {
+      line.setMap(null);
+    })
+  // Show the new edges 
+  } else {
+    console.log('firstclick');
+    curMarker.lines.forEach(function(line) {
+      line.setMap(map);
     });
   }
   // If the marker was clicked twice, hide lines 
-  curMarker.lines.forEach(function(line) {
+ /* curMarker.lines.forEach(function(line) {
     if (line.getMap() == null) {
       line.setMap(map);
     } else {
       line.setMap(null);
     }
-  })
-  console.log("setting clicked")
-  clickedMarker = curMarker;
+  })*/
+
+  //lastClickedMarker = curMarker;
   // Set this marker to be the most recently clicked marker 
   
 }
@@ -255,7 +296,7 @@ function buildCollabHTML(instid, obj) {
   // and publications to the html code
   // associated with the school 
   var collab_html = '';
-  for (var author in obj) {
+ /* for (var author in obj) {
     collab_html += '<div class="collaborator"> \
     <input type="checkbox" />' + author 
     var publications = obj[author];
@@ -263,27 +304,46 @@ function buildCollabHTML(instid, obj) {
       collab_html += '<p>' + publications[pub] + '<br />'
     }
     collab_html += '</p></div>'
+  }*/
+  var id = 0;
+  for (var author in obj) {
+    id++;
+    collab_html += '<div class="card"> \
+    <div class="card-header" id="heading"'+id+'> \
+      <h5 class="mb-0"> \
+      <button class="btn btn-link" data-toggle="collapse" data-target="#collapse"'+id+ '\
+      aria-expanded="true" aria-controls="collapse"'+id+'>' + author +
+      ' </button> \
+      </h5> \
+    </div> \
+    <div class="collapse show" aria-labelledby="heading"'+id+ 'data-parent="#accordion"> \
+      <div class="card-body"></div>';
+  var publications = obj[author];
+  for (var pub in publications){
+    collab_html += '<p>' + publications[pub] + '<br />'
+  }
+  collab_html += '</p> </div> \
+  </div> \
+</div>' 
+      
   }
   // Set the marker's html property to the html just built 
   curMarker.collabhtml = collab_html;
 }
 
-async function showHideCollaboratorPanel(instid){
+async function showHideCollaboratorPanel(instid, clickStatus){
   var curMarker = markers.get(instid);
   // If the marker doesn't have collaborator html yet, get it 
   if (curMarker.collabhtml == ''){
-    console.log("awaiting"+curMarker.title);
     await getCollaborators(instid);
   }
-  console.log("awaited"+curMarker.title);
+
   // If the marker is clicked twice, load a blank side panel
-  if (sidehtml == curMarker.collabhtml) {
-    console.log("clearing side bar"+curMarker.title)
+  if (clickStatus == 'doubleclick') {
     loadSideBar('');
-  // Else, generate a new information on this marker's side panel
+  // Generate a new information on this marker's side panel
   } else {
     loadSideBar(curMarker.collabhtml);
-    console.log("loading side bar"+curMarker.title)
   }
 }
 
@@ -294,7 +354,7 @@ function loadSideBar(html){
       '<h1>Academic Collaboration Network</h1>' + html;*/
     document.getElementById("accordian").innerHTML = html;
     sidehtml = html;
-    console.log("setting sidehtml")
+
     //console.log(document.getElementById("checklist").innerHTML);
 }
 
@@ -303,17 +363,16 @@ function loadSideBar(html){
 
 /* ------------INFOWINDOW------------*/
 
-function showHideInfoWindow(map, marker, infowindow) {
-  // Check to make sure the infowindow is not already opened on this marker.
-  // Close the info window if marker is clicked twice 
-  if (infowindow.marker == marker) {
-    infowindow.close();
-    infowindow.marker = null;
-  } else {
-  // If a different marker is clicked close current window and open new one 
+function showHideInfoWindow(map, marker, infowindow, clickStatus) {
+  // Open info window on desired marker 
+  if (clickStatus === 'firstclick' || clickStatus === 'newclick') {
     infowindow.setContent(marker.title);
     infowindow.marker = marker;
     infowindow.open(map,marker);
+  } else {
+  // Double clicked, so close info window 
+    infowindow.close();
+    infowindow.marker = null;
   } 
 }
 
