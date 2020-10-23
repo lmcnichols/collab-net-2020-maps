@@ -10,12 +10,12 @@ const app = express();
 app.use(cors())
 
 /* Use express router */
-app.use('/api/data', require('./routes/api/data'));
-app.use('/api/edges', require('./routes/api/edges'));
+app.use('/api/data', require('./src/routes/data'));
+app.use('/api/edges', require('./src/routes/edges'));
 
 /* Setting a static folder. This doesnt really do anything for single
    page web apps but automatically routes the html */
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'client')));
 
 const PORT = process.env.PORT || 3000;
 
