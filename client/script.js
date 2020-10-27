@@ -1,14 +1,15 @@
 "use strict";
+
+
+var map;
+const CALPOLYLATLNG = {lat: 37, lng: -115.65};
+const ZOOM = 6;
+var infowindow;
+
 // Keeps track of the current marker 
 var curMarker = null;
 // Keeps track of the previous marker 
 var lastMarker = null;
-
-var map;
-const CURVATURE = 0.5;
-const CALPOLYLATLNG = {lat: 37, lng: -115.65};
-const ZOOM = 6;
-var infowindow;
 
 var data;
 var institutions;
@@ -17,6 +18,12 @@ var publications;
 var markers = new Map();
 
 var sidehtml = '';
+
+var defaultIcon;
+var highlightedIcon;
+var clickedIcon;
+
+
 
 
 
@@ -75,11 +82,9 @@ function renderMarkers() {
 
 function addMarker(inst){
   const position = new google.maps.LatLng(inst["location"][0], inst["location"][1]);
-  const defaultIcon = makeMarkerIcon('0091ff');
-  // Create a "highlighted location" marker color for when the user
-  // mouses over the marker.
-  const highlightedIcon = makeMarkerIcon('FFFF24');
-  
+  defaultIcon = makeMarkerIcon('0091ff');
+  highlightedIcon = makeMarkerIcon('FFFF24');
+  clickedIcon = makeMarkerIcon('FFAA00');
 
   const marker = new google.maps.Marker({
       position: position,
@@ -87,7 +92,8 @@ function addMarker(inst){
       title: inst["name"],
       instid: inst["id"],
       lines: [],
-      collabhtml: ''
+      collabhtml: '',
+      highlight: ""
   });
   
 
@@ -95,16 +101,19 @@ function addMarker(inst){
   marker.addListener('click', function(){
       curMarker = marker;
       parseClickEvent(marker)
-     // lastMarker = marker; 
   });
 
   // Two event listeners - one for mouseover, one for mouseout,
   // to change the colors back and forth.
   marker.addListener('mouseover', function() {
-    this.setIcon(highlightedIcon);
+    if (marker.highlight==""){
+      this.setIcon(highlightedIcon);
+    }
   });
   marker.addListener('mouseout', function() {
-    this.setIcon(defaultIcon);
+    if (marker.highlight==""){
+      this.setIcon(defaultIcon);
+    }
   });
   return marker;
 }
@@ -114,49 +123,38 @@ function parseClickEvent(marker){
 
   // FIRST CLICK
   if (lastMarker == null) {
+    marker.setIcon(clickedIcon);
+    marker.highlight = "set";
     showInfoWindow(marker);
     showCollaboratorPanel(marker);
     showEdges(marker);
-    lastMarker = curMarker;
+
+    lastMarker = curMarker; 
 
   // DOUBLE CLICK
   } else if (marker == lastMarker) {
+    marker.setIcon(defaultIcon);
+    marker.highlight = "";
     hideInfoWindow(marker);
     hideCollaboratorPanel();
     hideEdges(marker);
+
     lastMarker = null; 
 
   // NEW MARKER 
   } else {
+    lastMarker.setIcon(defaultIcon);
+    lastMarker.highlight = "";
+    marker.setIcon(clickedIcon);
+    marker.highlight = "set";
     showInfoWindow(marker);
     showCollaboratorPanel(marker);
     hideEdges(lastMarker);
     showEdges(marker);
+
     lastMarker = curMarker;
   }
   
-}
-
-
-
-
-
-// This function takes in a COLOR, and then creates a new marker
-// icon of that color. The icon will be 21 px wide by 34 high, have an origin
-// of 0, 0 and be anchored at 10, 34).
-function makeMarkerIcon(markerColor) {
-  var markerImage = new google.maps.MarkerImage(
-    'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
-    '|40|_|%E2%80%A2',
-    new google.maps.Size(21, 34),
-    new google.maps.Point(0, 0),
-    new google.maps.Point(10, 34),
-    new google.maps.Size(21,34));
-  return markerImage;
-}
-
-function myclick(instid) {
-  google.maps.event.trigger(markers.get(instid), "click");
 }
 
 
@@ -200,6 +198,7 @@ function drawCurve(curMarker, marker2){
         strokeOpacity: 1.0,
         strokeWeight: 1
   });
+  marker2.se
   curMarker.lines.push(line); 
 }
 
@@ -309,7 +308,6 @@ function loadSideBar(html){
 
 /* ------------INFOWINDOW------------*/
 
-
 function showInfoWindow(marker){
   infowindow.setContent(marker.title);
   infowindow.marker = marker;
@@ -322,5 +320,26 @@ function hideInfoWindow(marker){
 }
 
 
+/* ------------HIGHLIGHTING------------*/
+
+// This function takes in a COLOR, and then creates a new marker
+// icon of that color. The icon will be 21 px wide by 34 high, have an origin
+// of 0, 0 and be anchored at 10, 34).
+function makeMarkerIcon(markerColor) {
+  var markerImage = new google.maps.MarkerImage(
+    'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
+    '|40|_|%E2%80%A2',
+    new google.maps.Size(21, 34),
+    new google.maps.Point(0, 0),
+    new google.maps.Point(10, 34),
+    new google.maps.Size(21,34));
+  return markerImage;
+}
+
+
+function setHighlight(marker){
+  
+  marker.setIcon(clickedIcon);
+}
 
 
