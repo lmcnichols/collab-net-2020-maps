@@ -19,6 +19,7 @@ var edges = new Map();
 var sidehtml = '';
 
 
+
 /* ------------MAP------------*/
 
 async function initMap() {
@@ -78,6 +79,7 @@ function addMarker(inst){
   // Create a "highlighted location" marker color for when the user
   // mouses over the marker.
   const highlightedIcon = makeMarkerIcon('FFFF24');
+  
 
   const marker = new google.maps.Marker({
       position: position,
@@ -91,11 +93,19 @@ function addMarker(inst){
 
   // When marker is clicked infowindow pops up
   marker.addListener('click', function(){
+    if (lastClickedMarker != null) {
+     console.log("last"+lastClickedMarker.title);
+    console.log(lastClickedMarker.lines)}
+      console.log("current"+marker.title)
       var clickStatus = determineClickStatus(marker);
       showHideInfoWindow(map, marker, infowindow, clickStatus);
-      showHideEdges(marker.instid, clickStatus);
+      showHideEdges(marker.instid, clickStatus, lastClickedMarker);
       showHideCollaboratorPanel(marker.instid, clickStatus);
+   //   console.log("last"+marker.title);
       lastClickedMarker = marker;
+      lastClickedMarker.lines = marker.lines;
+
+  
      // getCollaborators(marker.instid);
      // buildCollabHTML(marker);
       // Store this marker as the most recently clicked marker 
@@ -112,27 +122,20 @@ function addMarker(inst){
   return marker;
 }
 
+
 function determineClickStatus(marker){
   // If last clicked is null, this is the first click
   if (lastClickedMarker == null) {
-   // lastClickedMarker = marker;
-   // console.log('firstlick');
     return 'firstclick'
-  // If last clicked equals current marker, it has been 
-  // double clicked
   } else if (marker == lastClickedMarker) {
-   // lastClickedMarker = marker;
-   // console.log('doubleclick');
     return 'doubleclick'
-  // If marker and last clicked are different, 
-  // a new marker has been clicked 
   } else {
-   // lastClickedMarker = marker;
-   // console.log('newclick');
     return 'newclick'
   }
   
 }
+
+
 
 
 
@@ -182,7 +185,6 @@ function buildEdges(sourceid, obj) {
     var marker2 = markers.get(instid)
 
     drawCurve(curMarker, marker2);
-
     edges.set(sourceid, curMarker)
   });
   
@@ -206,20 +208,18 @@ function drawCurve(curMarker, marker2){
 }
 
 
-async function showHideEdges(instid, clickStatus) {
+async function showHideEdges(instid, clickStatus, lastClickedMarker) {
   // if the marker doesn't have its edges yet, get them
   if (!edges.has(instid)) {
     await getEdges(instid);
   }
-  var curMarker = markers.get(instid);
 
-  // On new click hide the edges from the previous marker 
-  // and show new edges 
+  var curMarker = markers.get(instid);
   if (clickStatus === 'newclick') {
-    console.log('newclick');
-    console.log(lastClickedMarker.lines);
+   // console.log(lastClickedMarker.lines);
+    //console.log(lastClickedMarker.title);
     lastClickedMarker.lines.forEach(function(line) {
-      console.log("setting null")
+     // console.log("setting null")
       line.setMap(null);
     })
     curMarker.lines.forEach(function(line) {
@@ -230,9 +230,9 @@ async function showHideEdges(instid, clickStatus) {
     curMarker.lines.forEach(function(line) {
       line.setMap(null);
     })
+    lastClickedMarker = null;
   // Show the new edges 
   } else {
-    console.log('firstclick');
     curMarker.lines.forEach(function(line) {
       line.setMap(map);
     });
