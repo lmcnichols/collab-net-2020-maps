@@ -189,17 +189,18 @@ function buildEdges(sourceid, obj) {
   
 }
   
-function drawCurve(curMarker, marker2){
-  var path = [curMarker.getPosition(), marker2.getPosition()];
+function drawCurve(currentMarker, marker2){
+  var path = [currentMarker.getPosition(), marker2.getPosition()];
+  //console.log(path);
   var line = new google.maps.Polyline({
         path: path,
         geodesic: true,
         strokeColor: '#000000',
         strokeOpacity: 1.0,
-        strokeWeight: 1
+        strokeWeight: 1,
+        marker2: marker2
   });
-  marker2.se
-  curMarker.lines.push(line); 
+  currentMarker.lines.push(line); 
 }
 
 
@@ -209,12 +210,16 @@ async function showEdges(marker){
     }
     marker.lines.forEach(function(line) {
       line.setMap(map);
+      line.marker2.setIcon(clickedIcon);
+      line.marker2.highlight = "set";
     });
 }
 
 function hideEdges(marker){
   marker.lines.forEach(function(line) {
     line.setMap(null);
+    line.marker2.setIcon(defaultIcon);
+    line.marker2.highlight = "";
   })
 }
 
@@ -337,9 +342,5 @@ function makeMarkerIcon(markerColor) {
 }
 
 
-function setHighlight(marker){
-  
-  marker.setIcon(clickedIcon);
-}
 
 
