@@ -1,7 +1,8 @@
 "use strict";
-
-// Keeps track of the marker that was most recently clicked 
-var lastClickedMarker = null;
+// Keeps track of the current marker 
+var curMarker = null;
+// Keeps track of the previous marker 
+var lastMarker = null;
 
 var map;
 const CURVATURE = 0.5;
@@ -14,7 +15,6 @@ var institutions;
 var collaborators;
 var publications;
 var markers = new Map();
-var edges = new Map();
 
 var sidehtml = '';
 
@@ -93,22 +93,9 @@ function addMarker(inst){
 
   // When marker is clicked infowindow pops up
   marker.addListener('click', function(){
-    if (lastClickedMarker != null) {
-     console.log("last"+lastClickedMarker.title);
-    console.log(lastClickedMarker.lines)}
-      console.log("current"+marker.title)
-      var clickStatus = determineClickStatus(marker);
-      showHideInfoWindow(map, marker, infowindow, clickStatus);
-      showHideEdges(marker.instid, clickStatus, lastClickedMarker);
-      showHideCollaboratorPanel(marker.instid, clickStatus);
-   //   console.log("last"+marker.title);
-      lastClickedMarker = marker;
-      lastClickedMarker.lines = marker.lines;
-
-  
-     // getCollaborators(marker.instid);
-     // buildCollabHTML(marker);
-      // Store this marker as the most recently clicked marker 
+      curMarker = marker;
+      parseClickEvent(marker)
+     // lastMarker = marker; 
   });
 
   // Two event listeners - one for mouseover, one for mouseout,
@@ -123,14 +110,29 @@ function addMarker(inst){
 }
 
 
-function determineClickStatus(marker){
-  // If last clicked is null, this is the first click
-  if (lastClickedMarker == null) {
-    return 'firstclick'
-  } else if (marker == lastClickedMarker) {
-    return 'doubleclick'
+function parseClickEvent(marker){
+
+  // FIRST CLICK
+  if (lastMarker == null) {
+    showInfoWindow(marker);
+    showCollaboratorPanel(marker);
+    showEdges(marker);
+    lastMarker = curMarker;
+
+  // DOUBLE CLICK
+  } else if (marker == lastMarker) {
+    hideInfoWindow(marker);
+    hideCollaboratorPanel();
+    hideEdges(marker);
+    lastMarker = null; 
+
+  // NEW MARKER 
   } else {
-    return 'newclick'
+    showInfoWindow(marker);
+    showCollaboratorPanel(marker);
+    hideEdges(lastMarker);
+    showEdges(marker);
+    lastMarker = curMarker;
   }
   
 }
@@ -185,7 +187,6 @@ function buildEdges(sourceid, obj) {
     var marker2 = markers.get(instid)
 
     drawCurve(curMarker, marker2);
-    edges.set(sourceid, curMarker)
   });
   
 }
@@ -200,74 +201,22 @@ function drawCurve(curMarker, marker2){
         strokeWeight: 1
   });
   curMarker.lines.push(line); 
-  // This code would highlight the line when moused over 
- /* google.maps.event.addListener(line, 'mouseover', function() {
-    console.log("mouseover");
-     highlightLine(line, path);
-}); */
 }
 
 
-async function showHideEdges(instid, clickStatus, lastClickedMarker) {
-  // if the marker doesn't have its edges yet, get them
-  if (!edges.has(instid)) {
-    await getEdges(instid);
-  }
-
-  var curMarker = markers.get(instid);
-  if (clickStatus === 'newclick') {
-   // console.log(lastClickedMarker.lines);
-    //console.log(lastClickedMarker.title);
-    lastClickedMarker.lines.forEach(function(line) {
-     // console.log("setting null")
-      line.setMap(null);
-    })
-    curMarker.lines.forEach(function(line) {
-      line.setMap(map);
-    });
-  // Hide edges on double click 
-  } else if (clickStatus === 'doubleclick') { 
-    curMarker.lines.forEach(function(line) {
-      line.setMap(null);
-    })
-    lastClickedMarker = null;
-  // Show the new edges 
-  } else {
-    curMarker.lines.forEach(function(line) {
-      line.setMap(map);
-    });
-  }
-  // If the marker was clicked twice, hide lines 
- /* curMarker.lines.forEach(function(line) {
-    if (line.getMap() == null) {
-      line.setMap(map);
-    } else {
-      line.setMap(null);
+async function showEdges(marker){
+    if (marker.lines != []){
+      await getEdges(marker.instid);
     }
-  })*/
-
-  //lastClickedMarker = curMarker;
-  // Set this marker to be the most recently clicked marker 
-  
+    marker.lines.forEach(function(line) {
+      line.setMap(map);
+    });
 }
 
-// Not being used 
-function highlightLine(line, path){
-  line.setMap(null);
-  var highlightedLine = new google.maps.Polyline({
-          path: path,
-          geodesic: true,
-          strokeColor: '#FFFF24',
-          strokeOpacity: 1.0,
-          strokeWeight: 3
-      });
-      highlightedLine.setMap(map);
-
-      google.maps.event.addListener(highlightedLine, 'mouseout', function(){
-        console.log('mouseout');
-        highlightedLine.setMap(null);
-        line.setMap(map);
-    });
+function hideEdges(marker){
+  marker.lines.forEach(function(line) {
+    line.setMap(null);
+  })
 }
 
 
@@ -323,20 +272,16 @@ function buildCollabHTML(instid, obj) {
   curMarker.collabhtml = collab_html;
 }
 
-async function showHideCollaboratorPanel(instid, clickStatus){
-  var curMarker = markers.get(instid);
-  // If the marker doesn't have collaborator html yet, get it 
-  if (curMarker.collabhtml == ''){
-    await getCollaborators(instid);
-  }
 
-  // If the marker is clicked twice, load a blank side panel
-  if (clickStatus == 'doubleclick') {
-    loadSideBar('');
-  // Generate a new information on this marker's side panel
-  } else {
-    loadSideBar(curMarker.collabhtml);
+function hideCollaboratorPanel(){
+  loadSideBar('');
+}
+
+async function showCollaboratorPanel(marker){
+  if (marker.collabhtml == ''){
+    await getCollaborators(marker.instid);
   }
+  loadSideBar(marker.collabhtml);
 }
 
 
@@ -364,17 +309,16 @@ function loadSideBar(html){
 
 /* ------------INFOWINDOW------------*/
 
-function showHideInfoWindow(map, marker, infowindow, clickStatus) {
-  // Open info window on desired marker 
-  if (clickStatus === 'firstclick' || clickStatus === 'newclick') {
-    infowindow.setContent(marker.title);
-    infowindow.marker = marker;
-    infowindow.open(map,marker);
-  } else {
-  // Double clicked, so close info window 
-    infowindow.close();
-    infowindow.marker = null;
-  } 
+
+function showInfoWindow(marker){
+  infowindow.setContent(marker.title);
+  infowindow.marker = marker;
+  infowindow.open(map,marker);
+}
+
+function hideInfoWindow(marker){
+  infowindow.close();
+  infowindow.marker = null;
 }
 
 
