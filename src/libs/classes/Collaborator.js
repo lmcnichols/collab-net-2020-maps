@@ -3,11 +3,15 @@
 // class representing a collaborator
 
 class Collaborator {
-    constructor(name, scopusid, publications, instid) {
+    constructor(name, id, instid) {
         this.name = name;
-        this.scopusid = scopusid;
-        this.publications = publications;
+        this.id = id;
+        this.publications = [];
         this.instid = instid;
+    }
+
+    addPublication(id) {
+        this.publications.push(id);
     }
 }
 
