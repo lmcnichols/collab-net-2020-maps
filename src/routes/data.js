@@ -58,7 +58,7 @@ router.get('/getCollaborators', function(req, res) {
         collabMap[name] = publications;
     })
 
-    res.json(collabMap);
+    res.send(collabMap);
     
 });
 

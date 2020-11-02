@@ -230,7 +230,7 @@ function hideEdges(marker){
 
 async function getCollaborators(instid) {
   // build URL with search params
-  const url = new URL("http://localhost:3000/api/map/getCollaborators"),
+  const url = new URL("http://localhost:3000/api/data/getCollaborators"),
     params = {instid : instid}
   Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
 
@@ -248,20 +248,19 @@ function buildCollabHTML(instid, obj) {
   // Traverse each author in the json object and author name
   // and publications to the html code
   // associated with the school 
-  var collab_html= '<h2>'+curMarker.title+'</h2> <div id= "sidebar">';
- /* for (var author in obj) {
-    collab_html += '<div class="collaborator"> \
-    <input type="checkbox" />' + author 
-    var publications = obj[author];
-    for (var pub in publications){
-      collab_html += '<p>' + publications[pub] + '<br />'
-    }
-    collab_html += '</p></div>'
-  }*/
+  var collab_html= '<h2>'+curMarker.title+'</h2> \
+  form action="#">\
+  <div class="switch">\
+    <input id="switch-1" type="checkbox" class="switch-input" />\
+    <label for="switch-1" class="switch-label">'+"Show or Hide Edges"+'</label>\
+  </div>\
+</form>\
+</div>\
+<div id= "sidebar">'
 
   for (var author in obj) {
     collab_html += ' \
-    <button type="button" class="collapsible">' 
+    <button type="button" class="collapsible"> <input type="checkbox"/>' 
     + author +
     ' </button> \
     <div class="content">'

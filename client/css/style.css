@@ -1,3 +1,5 @@
+
+
 header {
   width: calc(100vw);
   height: 50px;
@@ -43,7 +45,7 @@ h2 {
 
 #sidebar {
   position: absolute;
-  top: 100px;
+  top: 150px;
   left: 15px;
   width: 300px;
   height: calc(100vh - 135px);
@@ -85,6 +87,60 @@ h2 {
 .active:after {
   content: "\2796"; /* Unicode character for "minus" sign (-) */
 }
+
+
+/* Switch */
+
+.switch {
+  position: relative;
+  display: inline-block;
+}
+.switch-input {
+  display: none;
+}
+.switch-label {
+  display: block;
+  width: 48px;
+  height: 20px;
+  text-indent: -150%;
+  clip: rect(0 0 0 0);
+  color: transparent;
+  user-select: none;
+}
+.switch-label::before,
+.switch-label::after {
+  content: "";
+  display: block;
+  position: absolute;
+  cursor: pointer;
+}
+.switch-label::before {
+  width: 100%;
+  height: 100%;
+  background-color: #dedede;
+  border-radius: 9999em;
+  -webkit-transition: background-color 0.25s ease;
+  transition: background-color 0.25s ease;
+}
+.switch-label::after {
+  top: 0;
+  left: 0;
+  width: 24px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.45);
+  -webkit-transition: left 0.25s ease;
+  transition: left 0.25s ease;
+}
+.switch-input:checked + .switch-label::before {
+  background-color: #89c12d;
+}
+.switch-input:checked + .switch-label::after {
+  left: 24px;
+}
+
+
 
 
 
