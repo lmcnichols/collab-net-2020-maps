@@ -3,13 +3,10 @@
 // class representing a publication
 
 class Publication {
-    constructor(title, authorId) {
+    constructor(id, title, authors) {
+        this.id = id;
         this.title = title;
-        this.authors = [authorId]
-    }
-
-    addAuthor(authorId) {
-        this.authors.push(authorId)
+        this.authors = authors;
     }
 }
 

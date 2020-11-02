@@ -2,24 +2,20 @@
 
 // class representing an institution
 class Institution {
-    constructor(name, id, location, publications, colScopus) {
+    constructor(name, id, location) {
         this.name = name;
         this.id = id;
         this.location = location;
-        this.publications = publications;
-        this.collaborators = [colScopus];
+        this.publications = new Set();
+        this.collaborators = new Set();
     }
 
-    addPublications(publications) {
-        for (var i = 0; i < publications.length; i++) {
-            if (!this.publications.includes(publications[i])) {
-                this.publications.push(publications[i]);
-            }
-        }
+    addPublication(id) {
+        this.publications.add(id);
     }
 
-    addCollaborator(colScopus) {
-        this.collaborators.push(colScopus);
+    addCollaborator(id) {
+        this.collaborators.add(id);
     }
 }
 
