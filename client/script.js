@@ -56,7 +56,6 @@ async function initMap() {
 
 async function initData() {
   const url = new URL('http://localhost:3000/api/data/scrapeData');
-  
   var response = await fetch(url);
 
   if (response.ok) {

@@ -14,6 +14,7 @@ var publicationData = preprocess.publicationData;
 /* Populate global data objects */
 router.get('/scrapeData', function(req, res) {
     // scrape the data
+
     preprocess.scrapeData();
 
     /* These local objects are only for testing, we send them as

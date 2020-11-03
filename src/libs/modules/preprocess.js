@@ -1,7 +1,7 @@
 "use strict"
 
 // import mysql module
-const mysql = require('mysql');
+//const mysql = require('mysql');
 const { performance } = require('perf_hooks');
 
 // import classes
@@ -9,17 +9,22 @@ var Institution = require('../classes/Institution');
 var Collaborator = require('../classes/Collaborator');
 var Publication = require('../classes/Publication');
 
+
 // set CONSTANTS
+const GRAPH_FILE = 'outGraph.json';
+
+const fs = require('fs');
+
 const HOST = "cpcollabnetwork8.cn244vkxrxzn.us-west-1.rds.amazonaws.com";
 const USER = "kevin";
 const PASSWORD = "%Gwe%.A.puP'^/8j";
 const DBNAME = "cpcollabnet2019";
-const pool = mysql.createPool({
+/*const pool = mysql.createPool({
   host: HOST,
   user: USER,
   password: PASSWORD,
   database: DBNAME
-});
+});*/
 
 /* ================================================== */
 const institutionData = new Map();
@@ -27,7 +32,7 @@ const collaboratorData = new Map();
 const publicationData = new Map();
 /* ================================================== */
 
-async function scrapeData() {
+/*async function scrapeData() {
     // start timer
     var t1 = performance.now();
 
@@ -133,9 +138,10 @@ function makeQuery(qstring, binding) {
         });
     });
 }
+*/
 
-/*
 function scrapeData() {
+    
     var t1 = performance.now();
     var count = 0;
     var tempMap = new Map();
@@ -202,7 +208,7 @@ function cleanPublications(pubs) {
     for (var i = 0; i < pubs.length; i++) {
         pubs[i] = pubs[i].trim();
     }
-}*/
+}
 
 module.exports = {
     scrapeData : scrapeData,

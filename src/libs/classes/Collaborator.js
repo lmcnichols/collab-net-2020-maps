@@ -1,4 +1,4 @@
-"use strict";
+/*"use strict";
 
 // class representing a collaborator
 
@@ -12,6 +12,21 @@ class Collaborator {
 
     addPublication(id) {
         this.publications.push(id);
+    }
+}
+
+module.exports = Collaborator;*/
+
+"use strict";
+
+// class representing a collaborator
+
+class Collaborator {
+    constructor(name, scopusid, publications, instid) {
+        this.name = name;
+        this.scopusid = scopusid;
+        this.publications = publications;
+        this.instid = instid;
     }
 }
 
