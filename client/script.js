@@ -16,12 +16,14 @@ var institutions;
 var collaborators;
 var publications;
 var markers = new Map();
+var collabEdgeMap = new Map();
 
 var sidehtml = '';
 
 var defaultIcon;
 var highlightedIcon;
 var clickedIcon;
+
 
 
 
@@ -92,7 +94,8 @@ function addMarker(inst){
       instid: inst["id"],
       lines: [],
       collabhtml: '',
-      highlight: ""
+      highlight: "",
+      authors: {}
   });
   
 
@@ -127,7 +130,6 @@ function parseClickEvent(marker){
     showInfoWindow(marker);
     showCollaboratorPanel(marker);
     showEdges(marker);
-
     lastMarker = curMarker; 
 
   // DOUBLE CLICK
@@ -190,7 +192,6 @@ function buildEdges(sourceid, obj) {
   
 function drawCurve(currentMarker, marker2){
   var path = [currentMarker.getPosition(), marker2.getPosition()];
-  //console.log(path);
   var line = new google.maps.Polyline({
         path: path,
         geodesic: true,
@@ -204,7 +205,7 @@ function drawCurve(currentMarker, marker2){
 
 
 async function showEdges(marker){
-    if (marker.lines != []){
+    if (marker.lines != []){ //is this wrong?
       await getEdges(marker.instid);
     }
     marker.lines.forEach(function(line) {
@@ -230,49 +231,66 @@ function hideEdges(marker){
 async function getCollaborators(instid) {
   // build URL with search params
   const url = new URL("http://localhost:3000/api/data/getCollaborators"),
-    params = {instid : instid}
+  params = {instid : instid}
   Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
 
   // call fetch
-  var obj = await fetch(url).
+  var collaborators = await fetch(url).
     then(function(res) {
       return res.json();
     })
 
-  buildCollabHTML(instid, obj);
+  buildCollabHTML(instid, collaborators);
 }
 
-function buildCollabHTML(instid, obj) {
+
+function buildCollabHTML(instid, collaborators) {
   var curMarker = markers.get(instid);
   // Traverse each author in the json object and author name
   // and publications to the html code
   // associated with the school 
-  var collab_html= '<h2>'+curMarker.title+'</h2> \
-  form action="#">\
-  <div class="switch">\
-    <input id="switch-1" type="checkbox" class="switch-input" />\
-    <label for="switch-1" class="switch-label">'+"Show or Hide Edges"+'</label>\
-  </div>\
-</form>\
-</div>\
-<div id= "sidebar">'
 
-  for (var author in obj) {
-    collab_html += ' \
-    <button type="button" class="collapsible"> <input type="checkbox"/>' 
+  var collab_html= '<h2>'+curMarker.title+'</h2> \
+  <input type="checkbox" id="toggle" class="checkbox" />  \
+  <label for="toggle" class="switch"></label>'
+  Object.keys(collaborators).forEach(function(key) {
+    var author = key
+    var id = collaborators[key].authorId;
+    var publications = collaborators[key].publications;
+
+    curMarker.authors[author] = [];
+    
+
+    collab_html += '<button type="button" class="collapsible"> \
+    <input type="checkbox" class="checkbox1" id='+id+'/>'
     + author +
     ' </button> \
     <div class="content">'
-  var publications = obj[author];
-  for (var pub in publications){
-    collab_html += '<p>' + publications[pub] + '<br />'
-  }
-  collab_html += '</p> </div> <div>' 
-      
-  }
+    for (var pub in publications){
+      collab_html += '<p>' + publications[pub] + '<br />'
+    }
+    collab_html += '</p> </div> <div>' 
+});
+
+ 
   // Set the marker's html property to the html just built 
   curMarker.collabhtml = collab_html;
 }
+
+function createToggle(marker){
+  var toggle = document.getElementById("toggle");
+  var state = false;
+  toggle.addEventListener("click", function(){
+    state = !state;
+    if(state){
+      hideEdges(marker);
+    } else {
+      showEdges(marker)
+    }
+  })
+}
+
+
 
 
 function hideCollaboratorPanel(){
@@ -284,6 +302,8 @@ async function showCollaboratorPanel(marker){
     await getCollaborators(marker.instid);
   }
   loadSideBar(marker.collabhtml);
+  createToggle(marker);  
+  createChecks(marker);
 }
 
 
@@ -291,8 +311,8 @@ function loadSideBar(html){
     document.getElementById("sidepanel").innerHTML = html;
     sidehtml = html;
     var coll = document.getElementsByClassName("collapsible");
-    var i;
 
+    var i;
     for (i = 0; i < coll.length; i++) {
       coll[i].addEventListener("click", function() {
         this.classList.toggle("active");
@@ -303,9 +323,8 @@ function loadSideBar(html){
           content.style.display = "block";
         }
       });
-    }   
+    } 
 }
-
 
 
 
@@ -337,6 +356,81 @@ function makeMarkerIcon(markerColor) {
     new google.maps.Point(10, 34),
     new google.maps.Size(21,34));
   return markerImage;
+}
+
+
+/* ------------CHECKBOXES------------*/
+
+
+function createChecks(marker){  
+  var checklist = document.getElementsByClassName("checkbox1");
+  var i;
+  var checked = false;
+  for (i = 0; i < checklist.length; i++){
+    checklist[i].addEventListener("click", function(){
+        checked = !checked;
+        if (checked){
+          showCollabEdges(this.id, marker)
+        } else {
+          hideCollabEdges(this.id, marker)
+        }
+    })
+  }
+}
+
+
+async function getCollabEdges(authorId, marker) {
+  // build URL with search params
+  const url = new URL("http://localhost:3000/api/edges/getCollabEdges"),
+  params = {authorId : authorId}
+  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
+
+  // call fetch
+  var collabEdges = await fetch(url).
+    then(function(res) {
+      return res.json();
+    })
+  buildCollabEdges(authorId, collabEdges, marker)
+}
+
+
+function buildCollabEdges(authorId, obj, marker) {
+
+  Object.keys(obj).forEach(function(instidstr) {
+    var instid = parseInt(instidstr);
+    var marker2 = markers.get(instid)
+    var path = [marker.getPosition(), marker2.getPosition()];
+    var line = new google.maps.Polyline({
+        path: path,
+        geodesic: true,
+        strokeColor: '#000000',
+        strokeOpacity: 1.0,
+        strokeWeight: 1,
+        marker2: marker2
+  });
+  marker.authors.authorId.push(line);
+  });
+}
+
+
+async function showCollabEdges(authorId, marker){
+  if (marker.authors.authorId= []){
+    await getCollabEdges(authorId, marker);
+  }
+  
+  marker.authors.authorId.forEach(function(line){
+    line.setMap(map);
+    line.marker2.setIcon(clickedIcon);
+    line.marker2.highlight = "set";
+  });
+}
+
+function hideCollabEdges(authorId, marker) {
+  marker.authors.authorId.forEach(function(line){
+    line.setMap(null);
+    line.marker2.setIcon(defaultIcon);
+    line.marker2.highlight = "";
+  });
 }
 
 

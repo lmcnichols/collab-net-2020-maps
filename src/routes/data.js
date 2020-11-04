@@ -56,11 +56,14 @@ router.get('/getCollaborators', function(req, res) {
         //publicationData.get(title)["authors"].forEach(function (authorId) {
         var publications = collaboratorData.get(authorId)["publications"];
         var name = collaboratorData.get(authorId)["name"];
-        collabMap[name] = publications;
+        collabMap[name]   = {
+            "publications" : publications,
+            "authorId" : authorId
+        }
     })
-
     res.send(collabMap);
-    
 });
+
+
 
 module.exports = router;

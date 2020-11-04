@@ -43,19 +43,15 @@ router.get('/getEdges', function(req, res) {
 
 router.get('/getCollabEdges', function(req, res) {
     const searchParams = url.parse(req.url, true).query;
-    const sourceid = parseInt(searchParams["instid"]);
-    const source = institutionData.get(sourceid);
+    const authorId = parseInt(searchParams["authorId"]);
+    var sourceid = collaboratorData.get(authorId)["instid"];
+    const author = collaboratorData.get(authorId);
     var edgeMap = {};
 
-    // getting all collaborating institutions for each publication
-    source["publications"].forEach(function (title) {
-        // getting all authors for the current title
+    author["publications"].forEach(function (title) {
         publicationData.get(title)["authors"].forEach(function (authorId) {
             var colInst = collaboratorData.get(authorId)["instid"];
 
-            // if the collaborating inst is not the current inst AND
-            // if the current inst's edgeMap does not contain an edge to
-            // the collaborating inst add it
             if (colInst != sourceid) {
                 // if we've already seen this institution, add author to collabs
                 if (edgeMap.hasOwnProperty(colInst)) {
@@ -69,6 +65,8 @@ router.get('/getCollabEdges', function(req, res) {
 
     res.json(edgeMap);
 });
+
+
 
 
 module.exports = router;
