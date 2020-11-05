@@ -15,7 +15,8 @@
     "express": "^4.17.1",
     "fs": "0.0.1-security",
     "mysql": "^2.18.1",
-    "pretty-checkbox": "^3.0.3"
+    "pretty-checkbox": "^3.0.3",
+    "react": "^17.0.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
